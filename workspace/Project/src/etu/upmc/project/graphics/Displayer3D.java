@@ -22,34 +22,23 @@ import javax.media.opengl.fixedfunc.GLMatrixFunc;
 
 import com.jogamp.opengl.util.Animator;
 
-import etu.upmc.project.datatransmission.Event;
-import etu.upmc.project.datatransmission.EventsManager;
+import etu.upmc.project.World;
+import etu.upmc.project.events.Event;
+import etu.upmc.project.events.EventInit;
+import etu.upmc.project.events.EventUpdate;
 import etu.upmc.project.graphics.objects.Agent;
 import etu.upmc.project.graphics.objects.Tree;
 
-public class Landscape implements GLEventListener, KeyListener, MouseListener, Observer {
+public class Displayer3D implements GLEventListener, KeyListener, MouseListener, Observer {
 
-	private static GLCapabilities caps;  // GO FAST ???
+	private static GLCapabilities CAPS;  // GO FAST ???
 
-	static boolean MY_LIGHT_RENDERING = false; // true: nicer but slower
+	private static boolean MY_LIGHT_RENDERING = false; // true: nicer but slower
+	private static boolean VIEW_FROM_ABOVE = false; // also deactivate altitudes
+	private static Animator animator; 
 
-	static boolean VIEW_FROM_ABOVE = false; // also deactivate altitudes
-
-	static Animator animator; 
 	private float rotateX = 0.0f;
 	private float rotationVelocity = 0.0f; // 0.2f
-
-	int it = 0;
-	int movingIt = 0;
-	int dxView;
-	int dyView;
-
-	double[][] landscape; 
-
-	int lastFpsValue = 0;
-
-	public static int lastItStamp = 0;
-	public static long lastTimeStamp = 0;
 
 	float heightFactor; //64.0f; // was: 32.0f;
 	double heightBooster; // applied to landscape values. increase heights.
@@ -63,37 +52,32 @@ public class Landscape implements GLEventListener, KeyListener, MouseListener, O
 	float smoothFactor[];
 	int smoothingDistanceThreshold;
 
-	int movingX = 0; 
-	int movingY = 0; 
+	private float colors[][][];
+	private double maxEverHeightValue;
+	private double minEverHeightValue;
+	private int[][] cellsStates;
+	private int width;
+	private int height;
+	private double[][] elevation; 
 
-	float colors[][][];
-	double maxEverHeightValue;
-	double minEverHeightValue;
-	int[][] cellsStates;
-
-	private static final String FILENAME = "landscape_paris-200.png";
-
-	public Landscape (int width, int height)
+	public Displayer3D ()
 	{
-		this.landscape = LoadFromFileLandscape.load(FILENAME, 0.2, 0.42);
-		this.colors = new float[width][height][3];
-		this.cellsStates = new int[width][height];
+
 	}
 
 	private void init()
 	{
-		dxView = landscape.length;
-		dyView = landscape[0].length;
+		this.colors = new float[this.width][this.height][3];
+		this.cellsStates = new int[this.width][this.height];
 
-		System.out.println("Landscape contains " + dxView*dyView + " tiles. (" + dxView + "x" + dyView +")");
+		System.out.println("Landscape contains " + this.width*this.height + " tiles. (" + this.width + "x" + this.height +")");
 
-		// TODO : 
-		for (int x = 0; x < dxView - 1; x++)
+		for (int x = 0; x < this.width - 1; x++)
 		{
-			for (int y = 0; y < dyView - 1; y++)
+			for (int y = 0; y < this.height - 1; y++)
 			{
-				double minHeightValue = Math.min(Math.min(landscape[x][y],landscape[x+1][y]),Math.min(landscape[x][y+1],landscape[x+1][y+1]));
-				double maxHeightValue = Math.max(Math.max(landscape[x][y],landscape[x+1][y]),Math.max(landscape[x][y+1],landscape[x+1][y+1])); 
+				double minHeightValue = Math.min(Math.min(elevation[x][y],elevation[x+1][y]),Math.min(elevation[x][y+1],elevation[x+1][y+1]));
+				double maxHeightValue = Math.max(Math.max(elevation[x][y],elevation[x+1][y]),Math.max(elevation[x][y+1],elevation[x+1][y+1])); 
 
 				if ( this.maxEverHeightValue < maxHeightValue )
 					this.maxEverHeightValue = maxHeightValue;
@@ -102,11 +86,11 @@ public class Landscape implements GLEventListener, KeyListener, MouseListener, O
 			}
 		}
 
-		for ( int x = 0 ; x < dxView ; x++ )
+		for ( int x = 0 ; x < this.width ; x++ )
 		{
-			for ( int y = 0 ; y < dyView ; y++ )
+			for ( int y = 0 ; y < this.height ; y++ )
 			{
-				float height = (float) this.landscape[x][y];
+				float height = (float) this.elevation[x][y];
 
 				if ( height >= 0 )
 				{
@@ -128,8 +112,8 @@ public class Landscape implements GLEventListener, KeyListener, MouseListener, O
 		heightBooster = 6.0; // default: 2.0 // 6.0 makes nice high mountains.
 
 		offset = -200.0f; // was: -40.
-		stepX = (-offset*2.0f) / dxView;
-		stepY = (-offset*2.0f) / dxView;
+		stepX = (-offset*2.0f) / this.width;
+		stepY = (-offset*2.0f) / this.width;
 		lenX = stepX / 2f;
 		lenY = stepY / 2f;
 
@@ -146,12 +130,12 @@ public class Landscape implements GLEventListener, KeyListener, MouseListener, O
 	 */
 	public void run()
 	{
-		caps = new GLCapabilities(null); //!n
-		caps.setDoubleBuffered(true);  //!n
+		CAPS = new GLCapabilities(null); //!n
+		CAPS.setDoubleBuffered(true);  //!n
 
-		final GLCanvas canvas = new GLCanvas(caps); // original
+		final GLCanvas canvas = new GLCanvas(CAPS); // original
 
-		final Frame frame = new Frame("World Of Cells");
+		final Frame frame = new Frame("Project");
 		animator = new Animator(canvas);
 		canvas.addGLEventListener(this);
 		canvas.addMouseListener(this);// register mouse callback functions
@@ -167,7 +151,7 @@ public class Landscape implements GLEventListener, KeyListener, MouseListener, O
 			}
 		});
 		frame.setVisible(true);
-		//animator.setRunAsFastAsPossible(true); // GO FAST!  --- DOES It WORK? 
+		animator.setRunAsFastAsPossible(true); // GO FAST!  --- DOES It WORK? 
 		animator.start();
 		canvas.requestFocus();
 	}
@@ -175,24 +159,26 @@ public class Landscape implements GLEventListener, KeyListener, MouseListener, O
 	@Override
 	public void update(Observable o, Object arg) 
 	{
-		if (!(o instanceof EventsManager) || !(arg instanceof Event))
+		if (!(o instanceof World) || !(arg instanceof Event))
 		{
-			throw new IllegalArgumentException(this.getClass().getName() + " : only an instance of the class \"EventsManager\" can be observable by " 
+			throw new IllegalArgumentException(this.getClass().getName() + " : only an instance of the class \"World\" can be observable by " 
 					+ this.getClass().getSimpleName() + ".");
 		}
 
-		Event event = (Event) arg;
-
-		if (event == Event.INIT)
+		if (arg instanceof EventInit)
 		{
+			EventInit event = (EventInit) arg;
+			this.width = event.getWidth();
+			this.height = event.getHeight();
+			this.elevation = event.getElevation();
 			this.init();
 			this.run();
 		}
-		else if (event == Event.UPDATE)
+		else if (arg instanceof EventUpdate)
 		{
 			for (int i = 0; i < this.cellsStates.length; i++)
 			{
-				this.cellsStates[i] = ((EventsManager) o).getStatesBuffer()[i].clone();
+				this.cellsStates[i] = ((EventUpdate) arg).getBuffer()[i].clone();
 			}
 		}
 	}
@@ -237,15 +223,11 @@ public class Landscape implements GLEventListener, KeyListener, MouseListener, O
 		{
 			// Prepare light parameters.
 			float SHINE_ALL_DIRECTIONS = 1;
-			//float[] lightPos = {120.f, 120.f, -200.f, SHINE_ALL_DIRECTIONS};
-			//float[] lightPos = {40.f, 0.f, -300.f, SHINE_ALL_DIRECTIONS};
-			float[] lightPos = {0.f, 40.f, -100.f, SHINE_ALL_DIRECTIONS};
-			//float[] lightColorAmbient = {0.2f, 0.2f, 0.2f, 1f};
-			float[] lightColorAmbient = {0.5f, 0.5f, 0.5f, 1f};
+			float[] lightPos = {40.f, 0.f, -300.f, SHINE_ALL_DIRECTIONS};
+			float[] lightColorAmbient = {0.2f, 0.2f, 0.2f, 1f};
 			float[] lightColorSpecular = {0.8f, 0.8f, 0.8f, 1f};
 
 			// Set light parameters.
-
 			gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_POSITION, lightPos, 0);
 			gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_AMBIENT, lightColorAmbient, 0);
 			gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_SPECULAR, lightColorSpecular, 0);
@@ -269,20 +251,51 @@ public class Landscape implements GLEventListener, KeyListener, MouseListener, O
 			gl.glRotatef(-90.f, 1.0f, 0.0f, 0.0f);
 		}
 
-		it++;
-
 		// ** draw everything
 		gl.glBegin(GL2.GL_QUADS);                
 
-		for ( int x = 0 ; x < dxView-1 ; x++ )
-			for ( int y = 0 ; y < dyView-1 ; y++ )
+		for ( int x = 0 ; x < this.width-1 ; x++ )
+			for ( int y = 0 ; y < this.height-1 ; y++ )
 			{
-				double height = this.landscape[x][y];
+				double height = this.elevation[x][y];
+				float normalizeHeight = (smoothFactor[0] + smoothFactor[1] + smoothFactor[2] + smoothFactor[3]) / 4.f * (float)heightBooster * heightFactor;
+
+				if ( height >= 0 )
+				{
+					this.colors[x][y][0] = (float) (height / this.maxEverHeightValue);
+					this.colors[x][y][1] = (float) (0.9f + 0.1f * height / this.maxEverHeightValue);
+					this.colors[x][y][2] = (float) (height / this.maxEverHeightValue);
+				}
+				else
+				{
+					// water
+					this.colors[x][y][0] = (float) -height;
+					this.colors[x][y][1] = (float) -height;
+					this.colors[x][y][2] = 1.f;
+				}
+				
+				switch (this.cellsStates[x][y])
+				{
+				case 1:
+				case 2:
+				case 3:
+					Tree.displayObjectAt(gl, this.cellsStates[x][y], x, y, height, offset, stepX, stepY, lenX, lenY, normalizeHeight);
+					break;
+				case 4:
+					this.colors[x][y][0] = 158;
+					this.colors[x][y][1] = 157;
+					this.colors[x][y][2] = 36;
+					break;
+				case 5:
+				case 6:
+					Agent.displayObjectAt(gl, this.cellsStates[x][y], x, y, height, offset, stepX, stepY, lenX, lenY, normalizeHeight);
+					break;
+				}
 
 				gl.glColor3f(this.colors[x][y][0], this.colors[x][y][1], this.colors[x][y][2]);
 
 				// * if light is on
-				if ( MY_LIGHT_RENDERING )
+				if (MY_LIGHT_RENDERING)
 				{
 					gl.glMaterialfv(GL.GL_FRONT_AND_BACK, GL2.GL_AMBIENT, this.colors[x][y], 0);
 					gl.glMaterialfv(GL.GL_FRONT_AND_BACK, GL2.GL_DIFFUSE, this.colors[x][y], 0);
@@ -295,7 +308,7 @@ public class Landscape implements GLEventListener, KeyListener, MouseListener, O
 				// Border visual smoothing : smooth altitudes near border (i.e. nicer rendering)
 				if (VIEW_FROM_ABOVE != true)
 				{
-					if ( Math.min(Math.min(x, dxView-x-1),Math.min(y, dyView-y-1)) < smoothingDistanceThreshold )
+					if ( Math.min(Math.min(x, this.width-x-1),Math.min(y, this.height-y-1)) < smoothingDistanceThreshold )
 					{
 
 						for ( int i = 0 ; i < 4 ; i++ )
@@ -304,8 +317,8 @@ public class Landscape implements GLEventListener, KeyListener, MouseListener, O
 							int yIt = i==0||i==1?1:0;
 							smoothFactor[i] = (float)
 									Math.min(
-											Math.min( 1.0 , (double)Math.min(x+xIt,dxView-x+xIt)/(double)smoothingDistanceThreshold ) ,  // check x-axis
-											Math.min( 1.0 , (double)Math.min(y+yIt,dyView-y+yIt)/(double)smoothingDistanceThreshold )    // check y-axis
+											Math.min( 1.0 , (double)Math.min(x+xIt,this.width-x+xIt)/(double)smoothingDistanceThreshold ) ,  // check x-axis
+											Math.min( 1.0 , (double)Math.min(y+yIt,this.height-y+yIt)/(double)smoothingDistanceThreshold )    // check y-axis
 											);
 						}	                            	
 					}
@@ -315,8 +328,6 @@ public class Landscape implements GLEventListener, KeyListener, MouseListener, O
 							smoothFactor[i] = 1.0f;
 					}
 				}
-
-				// use dxCA instead of dxView to keep synchronization with CA states
 
 				for ( int i = 0 ; i < 4 ; i++ )
 				{
@@ -329,7 +340,7 @@ public class Landscape implements GLEventListener, KeyListener, MouseListener, O
 
 					if ( VIEW_FROM_ABOVE == false )
 					{
-						double altitude = landscape[(x + xIt) % (dxView - 1)][( y + yIt) % (dyView - 1)] * heightBooster;
+						double altitude = elevation[(x + xIt) % (this.width - 1)][( y + yIt) % (this.height - 1)] * heightBooster;
 						if ( altitude < 0 ) 
 							zValue = 0;
 						else
@@ -337,21 +348,6 @@ public class Landscape implements GLEventListener, KeyListener, MouseListener, O
 					}
 
 					gl.glVertex3f( offset+x*stepX+xSign*lenX, offset+y*stepY+ySign*lenY, zValue);
-				}
-
-				float normalizeHeight = (smoothFactor[0] + smoothFactor[1] + smoothFactor[2] + smoothFactor[3]) / 4.f * (float)heightBooster * heightFactor;
-				
-				switch (this.cellsStates[x][y])
-				{
-				case 1:
-				case 2:
-				case 3:
-					Tree.displayObjectAt(gl, this.cellsStates[x][y], x, y, height, offset, stepX, stepY, lenX, lenY, normalizeHeight);
-					break;
-				case 4:
-				case 5:
-					Agent.displayObjectAt(gl, this.cellsStates[x][y], x, y, height, offset, stepX, stepY, lenX, lenY, normalizeHeight);
-					break;
 				}
 			}
 
@@ -362,12 +358,6 @@ public class Landscape implements GLEventListener, KeyListener, MouseListener, O
 
 	@Override
 	public void reshape(GLAutoDrawable gLDrawable, int x, int y, int width, int height) {
-		if ( this.it == 0 )
-			System.out.println( "W"+"o"+"r"+"l"+"d"+" "+"O"+
-					"f"+" "+"C"+"e"+"l"+"l"+"s"+" "+"-"+" "+"n"+"i"+
-					"c"+"o"+"l"+"a"+"s"+"."+"b"+"r"+"e"+"d"+"e"+"c"+
-					"h"+"e"+(char)(0x40)+"u"+"p"+"m"+"c"+"."+"f"+"r"+
-					","+" "+"2"+"0"+"1"+"3"+"\n");
 		GL2 gl = gLDrawable.getGL().getGL2();
 		final float aspect = (float) width / (float) height;
 		gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);
@@ -452,18 +442,6 @@ public class Landscape implements GLEventListener, KeyListener, MouseListener, O
 			if ( heightBooster > 0 )
 				heightBooster--;
 			break;
-		case KeyEvent.VK_UP:
-			movingX = ( movingX + 1 ) % (dxView-1);
-			break;
-		case KeyEvent.VK_DOWN:
-			movingX = ( movingX - 1 + dxView-1 ) % (dxView-1);
-			break;
-		case KeyEvent.VK_RIGHT:
-			movingY = ( movingY - 1 + dyView-1 ) % (dyView-1);
-			break;
-		case KeyEvent.VK_LEFT:
-			movingY = ( movingY + 1 ) % (dyView-1);
-			break; 
 		case KeyEvent.VK_Q:
 			rotationVelocity-=0.1;
 			break;

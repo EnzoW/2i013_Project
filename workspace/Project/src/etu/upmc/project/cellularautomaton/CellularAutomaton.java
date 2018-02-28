@@ -2,21 +2,40 @@ package etu.upmc.project.cellularautomaton;
 
 public abstract class CellularAutomaton 
 {
+	/* ****************************************************************
+	 * 	Private Context
+	 * ****************************************************************/
 
 	protected int width;
 	protected int height;
 	protected AutomatonState[][] buffer;
+	protected int[][] informations;
+	protected double[][] elevation;
 	
-	public CellularAutomaton(int width, int height, AutomatonState[][] buffer) 
+	/* ****************************************************************
+	 * 	Constructor
+	 * ****************************************************************/
+	
+	public CellularAutomaton(int width, int height, AutomatonState[][] buffer, int[][] informations, double[][] elevation) 
 	{
 		this.width = width;
 		this.height = height;
 		this.buffer = buffer;
+		this.informations = informations;
+		this.elevation = elevation;
 	}
+	
+	/* ****************************************************************
+	 * 	Abstract public methods
+	 * ****************************************************************/
 	
 	abstract public void init();
 	
 	abstract public void step(int x, int y);
+	
+	/* ****************************************************************
+	 * 	Private methods
+	 * ****************************************************************/
 	
 	protected int nbNeighborsVN(final int x, final int y, final AutomatonState state)
 	{

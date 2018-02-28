@@ -3,13 +3,25 @@ package etu.upmc.project.cellularautomaton;
 public class Forest extends CellularAutomaton
 {
 
-	private static final double density = 0.90;
+	/* ****************************************************************
+	 * 	Constants
+	 * ****************************************************************/
+	
+	private static final double DENSITY = 0.90;
 
-	public Forest(int width, int height, AutomatonState[][] buffer) 
+	/* ****************************************************************
+	 * 	Constructor
+	 * ****************************************************************/
+	
+	public Forest(int width, int height, AutomatonState[][] buffer, int[][] informations, double[][] elevation) 
 	{
-		super(width, height, buffer);
+		super(width, height, buffer, informations, elevation);
 	}
 
+	/* ****************************************************************
+	 * 	Public methods
+	 * ****************************************************************/
+	
 	@Override
 	public void init() 
 	{
@@ -17,7 +29,7 @@ public class Forest extends CellularAutomaton
 		{
 			for ( int y = 0 ; y < this.height ; y++ )
 			{
-				if (density >= Math.random() && this.buffer[x][y] == AutomatonState.EMPTY)
+				if (DENSITY >= Math.random() && this.buffer[x][y] == AutomatonState.EMPTY && this.elevation[x][y] > 0)
 				{
 					this.buffer[x][y] = AutomatonState.FOREST_TREE;
 				}

@@ -1,4 +1,4 @@
-package etu.upmc.project.datatransmission;
+package etu.upmc.project.events;
 
 import etu.upmc.project.cellularautomaton.AutomatonState;
 
@@ -25,11 +25,17 @@ public class DataTranslation
 				case FOREST_TREE_BURNING:
 					colors = new int[] {0xFF000000, 255, 0, 0};
 					break;
+				case FOREST_ASHES:
+					colors = new int[] {0xFF000000, 0, 0, 0};
+					break;
+				case FOREST_GRASS:
+					colors = new int[] {0xFF000000, 255, 255, 0};
+					break;
 				case AGENT_PREDATOR:
 					colors = new int[] {0xFF000000, 0, 0, 255};
 					break;
 				case AGENT_PREY:
-					colors = new int[] {0xFF000000, 139,69,19};
+					colors = new int[] {0xFF000000, 139, 69, 19};
 					break;
 				}
 				
@@ -60,11 +66,17 @@ public class DataTranslation
 				case FOREST_TREE_BURNING:
 					statesBuffer[x][y] = 2;
 					break;
-				case AGENT_PREDATOR:
+				case FOREST_ASHES:
+					statesBuffer[x][y] = 3;
+					break;
+				case FOREST_GRASS:
 					statesBuffer[x][y] = 4;
 					break;
-				case AGENT_PREY:
+				case AGENT_PREDATOR:
 					statesBuffer[x][y] = 5;
+					break;
+				case AGENT_PREY:
+					statesBuffer[x][y] = 6;
 					break;
 				}
 			}
