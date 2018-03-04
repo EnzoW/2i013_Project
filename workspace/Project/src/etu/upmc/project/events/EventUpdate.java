@@ -3,12 +3,15 @@
  */
 package etu.upmc.project.events;
 
+import etu.upmc.project.cellularautomaton.AutomatonState;
+
 /**
  * @author Enzo
  *
  */
 public interface EventUpdate extends Event {
 
-	public int[][] getBuffer();
+	public AutomatonState[][] getBuffer();
 
+	public int[][] getInformations();
 }

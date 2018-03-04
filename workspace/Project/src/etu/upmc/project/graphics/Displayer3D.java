@@ -23,6 +23,7 @@ import javax.media.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.util.Animator;
 
 import etu.upmc.project.World;
+import etu.upmc.project.cellularautomaton.AutomatonState;
 import etu.upmc.project.events.Event;
 import etu.upmc.project.events.EventInit;
 import etu.upmc.project.events.EventUpdate;
@@ -55,10 +56,11 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 	private float colors[][][];
 	private double maxEverHeightValue;
 	private double minEverHeightValue;
-	private int[][] cellsStates;
+	private AutomatonState[][] cellsStates;
 	private int width;
 	private int height;
 	private double[][] elevation; 
+	private int[][] informations;
 
 	public Displayer3D ()
 	{
@@ -68,8 +70,9 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 	private void init()
 	{
 		this.colors = new float[this.width][this.height][3];
-		this.cellsStates = new int[this.width][this.height];
-
+		this.cellsStates = new AutomatonState[this.width][this.height];
+		this.informations = new int[this.width][this.height];
+		
 		System.out.println("Landscape contains " + this.width*this.height + " tiles. (" + this.width + "x" + this.height +")");
 
 		for (int x = 0; x < this.width - 1; x++)
@@ -109,9 +112,9 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 		}
 
 		heightFactor = 32.0f; //64.0f; // was: 32.0f;
-		heightBooster = 6.0; // default: 2.0 // 6.0 makes nice high mountains.
+		heightBooster = 4.0; // default: 2.0 // 6.0 makes nice high mountains.
 
-		offset = -200.0f; // was: -40.
+		offset = -100.0f; // was: -40.
 		stepX = (-offset*2.0f) / this.width;
 		stepY = (-offset*2.0f) / this.width;
 		lenX = stepX / 2f;
@@ -179,6 +182,7 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 			for (int i = 0; i < this.cellsStates.length; i++)
 			{
 				this.cellsStates[i] = ((EventUpdate) arg).getBuffer()[i].clone();
+				this.informations[i] = ((EventUpdate) arg).getInformations()[i].clone();
 			}
 		}
 	}
@@ -276,19 +280,24 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 				
 				switch (this.cellsStates[x][y])
 				{
-				case 1:
-				case 2:
-				case 3:
-					Tree.displayObjectAt(gl, this.cellsStates[x][y], x, y, height, offset, stepX, stepY, lenX, lenY, normalizeHeight);
+				case FOREST_TREE:
+				case FOREST_ASHES:
+				case FOREST_TREE_BURNING:
+					Tree.displayObjectAt(gl, this.cellsStates[x][y], x, y, height, offset, stepX, stepY, lenX, lenY, normalizeHeight, this.informations[x][y]);
 					break;
-				case 4:
-					this.colors[x][y][0] = 158;
-					this.colors[x][y][1] = 157;
-					this.colors[x][y][2] = 36;
+				case FOREST_GRASS:
+//					this.colors[x][y][0] = 158;
+//					this.colors[x][y][1] = 157;
+//					this.colors[x][y][2] = 36;
+					this.colors[x][y][0] = 0xFF;
+					this.colors[x][y][1] = 0xFF;
+					this.colors[x][y][2] = 0;
 					break;
-				case 5:
-				case 6:
+				case AGENT_PREDATOR:
+				case AGENT_PREY:
 					Agent.displayObjectAt(gl, this.cellsStates[x][y], x, y, height, offset, stepX, stepY, lenX, lenY, normalizeHeight);
+					break;
+				default:
 					break;
 				}
 
@@ -430,10 +439,16 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 			{
 				public void run() { animator.stop();}
 			}.start();
-			System.exit(0);
+			World.stop();
 			break;
 		case KeyEvent.VK_V:
 			VIEW_FROM_ABOVE = !VIEW_FROM_ABOVE ;
+			break;
+		case KeyEvent.VK_UP:
+			this.offset++;
+			break;
+		case KeyEvent.VK_DOWN:
+			this.offset--;
 			break;
 		case KeyEvent.VK_2:
 			heightBooster++;
