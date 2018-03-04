@@ -14,20 +14,25 @@ import javax.imageio.ImageIO;
  *
  */
 public class Tools {
-	
+
 	public static void shuffle(int[] array)
 	{
 		for (int i = 0; i < array.length; i++)
 		{
 			int r = (int) (i + Math.random() * (array.length - i));
-			
+
 			int tmp = array[r];
 			array[r] = array[i];
 			array[i] = tmp;
 		}
 	}
-	
-	public static double[][] load(String filename, double scaling, double landscapeAltitudeRatio )
+
+	public static float map(float value, float fromLow, float fromHigh, float toLow, float toHigh)
+	{
+		return (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow) + toLow;
+	}
+
+	public static double[][] load(String filename, double scaling, double landscapeAltitudeRatio)
 	{
 		double landscape[][] = null;
 

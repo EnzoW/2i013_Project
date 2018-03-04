@@ -3,8 +3,6 @@ package etu.upmc.project.cellularautomaton;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import javax.security.auth.x500.X500Principal;
-
 import etu.upmc.project.tools.Tools;
 
 /**
@@ -13,9 +11,9 @@ import etu.upmc.project.tools.Tools;
  */
 public class Agent extends CellularAutomaton 
 {
-	private static final double DENSITY = 0.20;
-	private static final int PREY_HUNGER_LIMIT = 50;
-	private static final int PREDATOR_HUNGER_LIMIT = 100;
+	private static final double DENSITY = 0.80;
+	private static final int PREY_HUNGER_LIMIT = 500;
+	private static final int PREDATOR_HUNGER_LIMIT = 1000;
 
 	public Agent(int width, int height, AutomatonState[][] buffer, int[][] informations, double[][] elevation) 
 	{
@@ -67,296 +65,299 @@ public class Agent extends CellularAutomaton
 				Collections.shuffle(cpt); //on a enlevé le biais en prenant le chasseur à la position 0
 				//on déplace le chasseur choisit aléatoirement et la proie en même temps
 				this.buffer[x][y] = AutomatonState.AGENT_PREY_FLEEING;
-
-				switch(cpt.get(0))//pos du premier pred qu'on prend (même s'il y en a plusieurs un seul se met en chasse)
+				if(cpt.size() > 1)
 				{
-				case 0 : //prédateur au sud ouest x-1 y-1
-					//cas favori : fuire au nord est x+1 y+1:
-					if( ((x + 1) <= this.width) || ((y + 1) <= this.height))
+					switch(cpt.get(0))//pos du premier pred qu'on prend (même s'il y en a plusieurs un seul se met en chasse)
 					{
-						if(this.buffer[x+1][y+1] == AutomatonState.EMPTY)
+					case 0 : //prédateur au sud ouest x-1 y-1
+						//cas favori : fuire au nord est x+1 y+1:
+						if(((x + 1 < this.width) && ((y + 1) < this.height)) && (y-1 >=0) && (x-1 >= 0))
 						{
-							this.informations[x+1][y+1] = this.informations[x][y];
-							this.informations[x][y] = this.informations[x-1][y-1];
-							this.informations[x-1][y-1] = 0;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
-							this.buffer[x+1][y+1] = AutomatonState.AGENT_PREY_FLEEING;
-							this.buffer[x-1][y-1] = AutomatonState.EMPTY;
+							if(this.buffer[x+1][y+1] == AutomatonState.EMPTY)
+							{
+								this.informations[x+1][y+1] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x-1][y-1];
+								this.informations[x-1][y-1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x+1][y+1] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x-1][y-1] = AutomatonState.EMPTY;
+							}
 						}
-					}
-					else 
-					{
-						int[] newPos = this.moveToEmpty(x,  y);
-						if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+						else if(((x + 1 < this.width) && ((y + 1) < this.height)) && (y-1 >=0) && (x-1 >= 0))
 						{
-							this.informations[x][y] = this.informations[x-1][y-1];
-							this.informations[x-1][y-1] = 0;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
-							this.buffer[x-1][y-1] = AutomatonState.EMPTY;
+							int[] newPos = this.moveToEmpty(x,  y);
+							if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+							{
+								this.informations[x][y] = this.informations[x-1][y-1];
+								this.informations[x-1][y-1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
+								this.buffer[x-1][y-1] = AutomatonState.EMPTY;
+							}
+							else 
+							{//bougenormalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
+								this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x-1][y-1];
+								this.informations[x-1][y-1] = 0;
+								this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x-1][y-1] = AutomatonState.EMPTY;
+							}
 						}
-						else 
-						{//bougenormalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
-							this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
-							this.informations[x][y] = this.informations[x-1][y-1];
-							this.informations[x-1][y-1] = 0;
-							this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
-							this.buffer[x-1][y-1] = AutomatonState.EMPTY;
+						break;
+					case 1 : //pod pred = x-1 y
+						if((x + 1 < this.width ) && ( x-1 >= 0) ) {
+							if(this.buffer[x+1][y] == AutomatonState.EMPTY)
+							{
+								this.informations[x+1][y] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x-1][y];
+								this.informations[x-1][y] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x+1][y] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x-1][y] = AutomatonState.EMPTY;
+							}
 						}
-					}
-					break;
-				case 1 : //pod pred = x-1 y
-					if(x + 1 >= this.width) {
-						if(this.buffer[x+1][y] == AutomatonState.EMPTY)
+						else if((x + 1 < this.width ) && ( x-1 >= 0) )
 						{
-							this.informations[x+1][y] = this.informations[x][y];
-							this.informations[x][y] = this.informations[x-1][y];
-							this.informations[x-1][y] = 0;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
-							this.buffer[x+1][y] = AutomatonState.AGENT_PREY_FLEEING;
-							this.buffer[x-1][y] = AutomatonState.EMPTY;
+							int[] newPos = this.moveToEmpty(x,  y);
+							if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+							{
+								this.informations[x][y] = this.informations[x-1][y];
+								this.informations[x-1][y] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
+								this.buffer[x-1][y] = AutomatonState.EMPTY;
+							}
+							else 
+							{//bougenormalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
+								this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x-1][y];
+								this.informations[x-1][y] = 0;
+								this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x-1][y] = AutomatonState.EMPTY;
+							}
 						}
-					}
-					else
-					{
-						int[] newPos = this.moveToEmpty(x,  y);
-						if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+						break;
+					case 2 : //pos pred : x-1 y+1
+						if((x+1 < this.width) && (y-1 >= 0) && (y+1 < this.height )) {
+							if(this.buffer[x+1][y-1] == AutomatonState.EMPTY)
+							{
+								this.informations[x+1][y-1] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x-1][y+1];
+								this.informations[x-1][y+1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x+1][y-1] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x-1][y+1] = AutomatonState.EMPTY;
+							}
+						}
+						else
 						{
-							this.informations[x][y] = this.informations[x-1][y];
-							this.informations[x-1][y] = 0;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
-							this.buffer[x-1][y] = AutomatonState.EMPTY;
+							int[] newPos = this.moveToEmpty(x,  y);
+							if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+							{
+								this.informations[x][y] = this.informations[x-1][y];
+								this.informations[x-1][y] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
+								this.buffer[x-1][y] = AutomatonState.EMPTY;
+							}
+							else if((x+1 < this.width) && (y-1 >= 0) && (y+1 < this.height )) 
+							{//bouge normalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
+								this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x-1][y+1];
+								this.informations[x-1][y+1] = 0;
+								this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x-1][y+1] = AutomatonState.EMPTY;
+							}
 						}
-						else 
-						{//bougenormalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
-							this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
-							this.informations[x][y] = this.informations[x-1][y];
-							this.informations[x-1][y] = 0;
-							this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
-							this.buffer[x-1][y] = AutomatonState.EMPTY;
+						break;
+					case 3 : //x y-1
+						if((y+1 < this.height) && (y-1 >= 0)) {
+							if(this.buffer[x][y+1] == AutomatonState.EMPTY)
+							{
+								this.informations[x][y+1] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x][y-1];
+								this.informations[x][y-1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x][y+1] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y-1] = AutomatonState.EMPTY;
+							}
 						}
-					}
-					break;
-				case 2 : //pos pred : x-1 y+1
-					if(!(x+1 >= this.width || y-1 < 0)) {
-						if(this.buffer[x+1][y-1] == AutomatonState.EMPTY)
+						else if((y+1 < this.height) && (y-1 >= 0))
 						{
-							this.informations[x+1][y-1] = this.informations[x][y];
-							this.informations[x][y] = this.informations[x-1][y+1];
-							this.informations[x-1][y+1] = 0;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
-							this.buffer[x+1][y-1] = AutomatonState.AGENT_PREY_FLEEING;
-							this.buffer[x-1][y+1] = AutomatonState.EMPTY;
+							int[] newPos = this.moveToEmpty(x,  y);
+							if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+							{
+								this.informations[x][y] = this.informations[x][y-1];
+								this.informations[x][y-1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
+								this.buffer[x][y-1] = AutomatonState.EMPTY;
+							}
+							else if((y+1 < this.height) && (y-1 >= 0))
+							{//bouge normalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
+								this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x][y-1];
+								this.informations[x][y-1] = 0;
+								this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x][y-1] = AutomatonState.EMPTY;
+							}
 						}
-					}
-					else
-					{
-						int[] newPos = this.moveToEmpty(x,  y);
-						if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+						break;
+					case 4 : //x y+1
+						if((y-1 >= 0) && (y+1 < this.height)) {
+							if(this.buffer[x][y-1] == AutomatonState.EMPTY)
+							{
+								this.informations[x][y-1] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x][y+1];
+								this.informations[x][y+1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x][y-1] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y+1] = AutomatonState.EMPTY;
+							}
+						}
+						else if((y-1 >= 0) && (y+1 < this.height))
 						{
-							this.informations[x][y] = this.informations[x-1][y];
-							this.informations[x-1][y] = 0;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
-							this.buffer[x-1][y] = AutomatonState.EMPTY;
+							int[] newPos = this.moveToEmpty(x,  y);
+							if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+							{
+								this.informations[x][y] = this.informations[x][y+1];
+								this.informations[x][y+1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
+								this.buffer[x][y+1] = AutomatonState.EMPTY;
+							}
+							else if((y-1 >= 0) && (y+1 < this.height))
+							{//bouge normalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
+								this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x][y+1];
+								this.informations[x][y+1] = 0;
+								this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x][y+1] = AutomatonState.EMPTY;
+							}
 						}
-						else 
-						{//bouge normalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
-							this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
-							this.informations[x][y] = this.informations[x-1][y+1];
-							this.informations[x-1][y+1] = 0;
-							this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
-							this.buffer[x-1][y+1] = AutomatonState.EMPTY;
+						break;
+					case 5 : //x+1 y-1
+						if(!(x-1 < 0 || y+1 >= this.height)) {
+							if(this.buffer[x-1][y+1] == AutomatonState.EMPTY)
+							{
+								this.informations[x-1][y+1] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x+1][y-1];
+								this.informations[x+1][y-1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x-1][y+1] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x+1][y-1] = AutomatonState.EMPTY;
+							}
 						}
-					}
-					break;
-				case 3 : //x y-1
-					if(!(y+1 >= this.height)) {
-						if(this.buffer[x][y+1] == AutomatonState.EMPTY)
+						else
 						{
-							this.informations[x][y+1] = this.informations[x][y];
-							this.informations[x][y] = this.informations[x][y-1];
-							this.informations[x][y-1] = 0;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
-							this.buffer[x][y+1] = AutomatonState.AGENT_PREY_FLEEING;
-							this.buffer[x][y-1] = AutomatonState.EMPTY;
+							int[] newPos = this.moveToEmpty(x,  y);
+							if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+							{
+								this.informations[x][y] = this.informations[x+1][y-1];
+								this.informations[x+1][y-1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
+								this.buffer[x+1][y-1] = AutomatonState.EMPTY;
+							}
+							else 
+							{//bouge normalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
+								this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x+1][y-1];
+								this.informations[x+1][y-1] = 0;
+								this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x+1][y-1] = AutomatonState.EMPTY;
+							}
 						}
-					}
-					else
-					{
-						int[] newPos = this.moveToEmpty(x,  y);
-						if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+						break;
+					case 6 : //x+1 y
+						if(!(x-1 < 0)) {
+							if(this.buffer[x-1][y] == AutomatonState.EMPTY)
+							{
+								this.informations[x-1][y] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x+1][y];
+								this.informations[x+1][y] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x+1][y] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x+1][y] = AutomatonState.EMPTY;
+							}
+						}
+						else
 						{
-							this.informations[x][y] = this.informations[x][y-1];
-							this.informations[x][y-1] = 0;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
-							this.buffer[x][y-1] = AutomatonState.EMPTY;
+							int[] newPos = this.moveToEmpty(x,  y);
+							if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+							{
+								this.informations[x][y] = this.informations[x+1][y];
+								this.informations[x+1][y] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
+								this.buffer[x+1][y] = AutomatonState.EMPTY;
+							}
+							else 
+							{//bouge normalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
+								this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x+1][y];
+								this.informations[x+1][y] = 0;
+								this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x+1][y] = AutomatonState.EMPTY;
+							}
 						}
-						else 
-						{//bouge normalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
-							this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
-							this.informations[x][y] = this.informations[x][y-1];
-							this.informations[x][y-1] = 0;
-							this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
-							this.buffer[x][y-1] = AutomatonState.EMPTY;
+						break;
+					case 7 : //x+1 y+1
+						if(!(x-1 < 0 || y-1 < 0)) {
+							if(this.buffer[x-1][y-1] == AutomatonState.EMPTY)
+							{
+								this.informations[x-1][y-1] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x+1][y+1];
+								this.informations[x+1][y+1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x-1][y-1] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x+1][y+1] = AutomatonState.EMPTY;
+							}
 						}
-					}
-					break;
-				case 4 : //x y+1
-					if(!(y-1 < 0)) {
-						if(this.buffer[x][y-1] == AutomatonState.EMPTY)
+						else
 						{
-							this.informations[x][y-1] = this.informations[x][y];
-							this.informations[x][y] = this.informations[x][y+1];
-							this.informations[x][y+1] = 0;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
-							this.buffer[x][y-1] = AutomatonState.AGENT_PREY_FLEEING;
-							this.buffer[x][y+1] = AutomatonState.EMPTY;
+							int[] newPos = this.moveToEmpty(x,  y);
+							if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+							{
+								this.informations[x][y] = this.informations[x+1][y+1];
+								this.informations[x+1][y+1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
+								this.buffer[x+1][y+1] = AutomatonState.EMPTY;
+							}
+							else 
+							{//bouge normalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
+								this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x+1][y+1];
+								this.informations[x+1][y+1] = 0;
+								this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x+1][y+1] = AutomatonState.EMPTY;
+							}
 						}
-					}
-					else
-					{
-						int[] newPos = this.moveToEmpty(x,  y);
-						if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
-						{
-							this.informations[x][y] = this.informations[x][y+1];
-							this.informations[x][y+1] = 0;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
-							this.buffer[x][y+1] = AutomatonState.EMPTY;
-						}
-						else 
-						{//bouge normalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
-							this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
-							this.informations[x][y] = this.informations[x][y+1];
-							this.informations[x][y+1] = 0;
-							this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
-							this.buffer[x][y+1] = AutomatonState.EMPTY;
-						}
-					}
-					break;
-				case 5 : //x+1 y-1
-					if(!(x-1 < 0 || y+1 >= this.height)) {
-						if(this.buffer[x-1][y+1] == AutomatonState.EMPTY)
-						{
-							this.informations[x-1][y+1] = this.informations[x][y];
-							this.informations[x][y] = this.informations[x+1][y-1];
-							this.informations[x+1][y-1] = 0;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
-							this.buffer[x-1][y+1] = AutomatonState.AGENT_PREY_FLEEING;
-							this.buffer[x+1][y-1] = AutomatonState.EMPTY;
-						}
-					}
-					else
-					{
-						int[] newPos = this.moveToEmpty(x,  y);
-						if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
-						{
-							this.informations[x][y] = this.informations[x+1][y-1];
-							this.informations[x+1][y-1] = 0;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
-							this.buffer[x+1][y-1] = AutomatonState.EMPTY;
-						}
-						else 
-						{//bouge normalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
-							this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
-							this.informations[x][y] = this.informations[x+1][y-1];
-							this.informations[x+1][y-1] = 0;
-							this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
-							this.buffer[x+1][y-1] = AutomatonState.EMPTY;
-						}
-					}
-					break;
-				case 6 : //x+1 y
-					if(!(x-1 < 0)) {
-						if(this.buffer[x-1][y] == AutomatonState.EMPTY)
-						{
-							this.informations[x-1][y] = this.informations[x][y];
-							this.informations[x][y] = this.informations[x+1][y];
-							this.informations[x+1][y] = 0;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
-							this.buffer[x+1][y] = AutomatonState.AGENT_PREY_FLEEING;
-							this.buffer[x+1][y] = AutomatonState.EMPTY;
-						}
-					}
-					else
-					{
-						int[] newPos = this.moveToEmpty(x,  y);
-						if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
-						{
-							this.informations[x][y] = this.informations[x+1][y];
-							this.informations[x+1][y] = 0;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
-							this.buffer[x+1][y] = AutomatonState.EMPTY;
-						}
-						else 
-						{//bouge normalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
-							this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
-							this.informations[x][y] = this.informations[x+1][y];
-							this.informations[x+1][y] = 0;
-							this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
-							this.buffer[x+1][y] = AutomatonState.EMPTY;
-						}
-					}
-					break;
-				case 7 : //x+1 y+1
-					if(!(x-1 < 0 || y-1 < 0)) {
-						if(this.buffer[x-1][y-1] == AutomatonState.EMPTY)
-						{
-							this.informations[x-1][y-1] = this.informations[x][y];
-							this.informations[x][y] = this.informations[x+1][y+1];
-							this.informations[x+1][y+1] = 0;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
-							this.buffer[x-1][y-1] = AutomatonState.AGENT_PREY_FLEEING;
-							this.buffer[x+1][y+1] = AutomatonState.EMPTY;
-						}
-					}
-					else
-					{
-						int[] newPos = this.moveToEmpty(x,  y);
-						if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
-						{
-							this.informations[x][y] = this.informations[x+1][y+1];
-							this.informations[x+1][y+1] = 0;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
-							this.buffer[x+1][y+1] = AutomatonState.EMPTY;
-						}
-						else 
-						{//bouge normalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
-							this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
-							this.informations[x][y] = this.informations[x+1][y+1];
-							this.informations[x+1][y+1] = 0;
-							this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
-							this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
-							this.buffer[x+1][y+1] = AutomatonState.EMPTY;
-						}
-					}
-					break;
-				default:
-					break;
+						break;
+					default:
+						break;
 
+					}
 				}
 			}
 			else if(this.nbNeighborsMoore(x, y, AutomatonState.AGENT_PREDATOR)>=1)
 			{
-				this.informations[x][y]++;
 				this.buffer[x][y] = AutomatonState.AGENT_PREY_FLEEING;	
-				break;
 			}
-			else if(this.nbNeighborsVN(x, y, AutomatonState.FOREST_GRASS)>=1)
+			else if(this.nbNeighborsMoore(x, y, AutomatonState.FOREST_GRASS)>=1)
 			{
-				//TODO : herbes et manger trop mort rn
+				int[] newPos = this.moveToEmpty(x, y);
+				this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY;
+				this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
+				this.informations[x][y] = 0;
+				this.buffer[x][y] = AutomatonState.EMPTY;
 
-				break;
 			}
 			else 
 			{
 				int[] newPos = this.moveToEmpty(x, y);
-				this.buffer[newPos[0]][newPos[1]] = this.buffer[x][y];
+				this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY;
 				this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
 				this.informations[x][y] = 0;
 				this.buffer[x][y] = AutomatonState.EMPTY;
@@ -366,12 +367,6 @@ public class Agent extends CellularAutomaton
 			// TODO: Si une proie est présente dans son voisinage --> poursuite
 			//TEST : Poursuite avec posNeighborAgent
 			this.informations[x][y]++;
-			if(this.nbNeighborsVN(x, y, AutomatonState.FOREST_TREE)==4)
-			{
-				this.informations[x][y] = 0;
-				this.buffer[x][y] = AutomatonState.EMPTY;
-				break;
-			}
 			if(this.informations[x][y]>PREDATOR_HUNGER_LIMIT)
 			{
 				this.informations[x][y] = 0;
@@ -386,10 +381,312 @@ public class Agent extends CellularAutomaton
 			else 
 			{
 				int[] newPos = this.moveToEmpty(x, y);
-				this.buffer[newPos[0]][newPos[1]] = this.buffer[x][y];
+				this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREDATOR;
 				this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
 				this.informations[x][y] = 0;
 				this.buffer[x][y] = AutomatonState.EMPTY;
+			}
+			break;
+		case AGENT_PREDATOR_HUNTING :
+			this.informations[x][y]++;
+			break;
+		case AGENT_PREY_FLEEING : 
+			this.informations[x][y]++; //nourriture
+			if(this.informations[x][y]>PREY_HUNGER_LIMIT)
+			{
+				this.informations[x][y] = 0;
+				this.buffer[x][y] = AutomatonState.EMPTY;
+				break; //meurt de faim
+			}
+			if(this.nbNeighborsMoore(x, y, AutomatonState.AGENT_PREDATOR_HUNTING) >= 1)
+			{
+				boolean[] closePred = this.getNeighborhood(x, y, AutomatonState.AGENT_PREDATOR_HUNTING);
+				ArrayList<Integer> cpt = new ArrayList<Integer>();
+				for(int i = 0; i < 8; i++)
+				{
+					if(closePred[i])
+					{
+						cpt.add(i);
+					}
+				}//onprends un predateur et on réagit en fonction
+				Collections.shuffle(cpt); //on a enlevé le biais en prenant le chasseur à la position 0
+				//on déplace le chasseur choisit aléatoirement et la proie en même temps
+				this.buffer[x][y] = AutomatonState.AGENT_PREY_FLEEING;
+				if(cpt.size() > 1)
+				{
+					switch(cpt.get(0))//pos du premier pred qu'on prend (même s'il y en a plusieurs un seul se met en chasse)
+					{
+					case 0 : //prédateur au sud ouest x-1 y-1
+						//cas favori : fuire au nord est x+1 y+1:
+						if(((x + 1 < this.width) && ((y + 1) < this.height)) && (y-1 >=0) && (x-1 >= 0))
+						{
+							if(this.buffer[x+1][y+1] == AutomatonState.EMPTY)
+							{
+								this.informations[x+1][y+1] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x-1][y-1];
+								this.informations[x-1][y-1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x+1][y+1] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x-1][y-1] = AutomatonState.EMPTY;
+							}
+						}
+						else if(((x + 1 < this.width) && ((y + 1) < this.height)) && (y-1 >=0) && (x-1 >= 0))
+						{
+							int[] newPos = this.moveToEmpty(x,  y);
+							if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+							{
+								this.informations[x][y] = this.informations[x-1][y-1];
+								this.informations[x-1][y-1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
+								this.buffer[x-1][y-1] = AutomatonState.EMPTY;
+							}
+							else 
+							{//bougenormalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
+								this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x-1][y-1];
+								this.informations[x-1][y-1] = 0;
+								this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x-1][y-1] = AutomatonState.EMPTY;
+							}
+						}
+						break;
+					case 1 : //pod pred = x-1 y
+						if((x + 1 < this.width ) && ( x-1 >= 0) ) {
+							if(this.buffer[x+1][y] == AutomatonState.EMPTY)
+							{
+								this.informations[x+1][y] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x-1][y];
+								this.informations[x-1][y] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x+1][y] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x-1][y] = AutomatonState.EMPTY;
+							}
+						}
+						else if((x + 1 < this.width ) && ( x-1 >= 0) )
+						{
+							int[] newPos = this.moveToEmpty(x,  y);
+							if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+							{
+								this.informations[x][y] = this.informations[x-1][y];
+								this.informations[x-1][y] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
+								this.buffer[x-1][y] = AutomatonState.EMPTY;
+							}
+							else 
+							{//bougenormalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
+								this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x-1][y];
+								this.informations[x-1][y] = 0;
+								this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x-1][y] = AutomatonState.EMPTY;
+							}
+						}
+						break;
+					case 2 : //pos pred : x-1 y+1
+						if((x+1 < this.width) && (y-1 >= 0) && (y+1 < this.height )) {
+							if(this.buffer[x+1][y-1] == AutomatonState.EMPTY)
+							{
+								this.informations[x+1][y-1] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x-1][y+1];
+								this.informations[x-1][y+1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x+1][y-1] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x-1][y+1] = AutomatonState.EMPTY;
+							}
+						}
+						else if((x+1 < this.width) && (y-1 >= 0) && (y+1 < this.height ))
+						{
+							int[] newPos = this.moveToEmpty(x,  y);
+							if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+							{
+								this.informations[x][y] = this.informations[x-1][y];
+								this.informations[x-1][y] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
+								this.buffer[x-1][y] = AutomatonState.EMPTY;
+							}
+							else if((x+1 < this.width) && (y-1 >= 0) && (y+1 < this.height )) 
+							{//bouge normalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
+								this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x-1][y+1];
+								this.informations[x-1][y+1] = 0;
+								this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x-1][y+1] = AutomatonState.EMPTY;
+							}
+						}
+						break;
+					case 3 : //x y-1
+						if((y+1 < this.height) && (y-1 >= 0)) {
+							if(this.buffer[x][y+1] == AutomatonState.EMPTY)
+							{
+								this.informations[x][y+1] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x][y-1];
+								this.informations[x][y-1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x][y+1] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y-1] = AutomatonState.EMPTY;
+							}
+						}
+						else if((y+1 < this.height) && (y-1 >= 0))
+						{
+							int[] newPos = this.moveToEmpty(x,  y);
+							if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+							{
+								this.informations[x][y] = this.informations[x][y-1];
+								this.informations[x][y-1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
+								this.buffer[x][y-1] = AutomatonState.EMPTY;
+							}
+							else if((y+1 < this.height) && (y-1 >= 0))
+							{//bouge normalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
+								this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x][y-1];
+								this.informations[x][y-1] = 0;
+								this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x][y-1] = AutomatonState.EMPTY;
+							}
+						}
+						break;
+					case 4 : //x y+1
+						if((y-1 >= 0) && (y+1 < this.height)) {
+							if(this.buffer[x][y-1] == AutomatonState.EMPTY)
+							{
+								this.informations[x][y-1] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x][y+1];
+								this.informations[x][y+1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x][y-1] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y+1] = AutomatonState.EMPTY;
+							}
+						}
+						else if((y-1 >= 0) && (y+1 < this.height))
+						{
+							int[] newPos = this.moveToEmpty(x,  y);
+							if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+							{
+								this.informations[x][y] = this.informations[x][y+1];
+								this.informations[x][y+1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
+								this.buffer[x][y+1] = AutomatonState.EMPTY;
+							}
+							else if((y-1 >= 0) && (y+1 < this.height))
+							{//bouge normalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
+								this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x][y+1];
+								this.informations[x][y+1] = 0;
+								this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x][y+1] = AutomatonState.EMPTY;
+							}
+						}
+						break;
+					case 5 : //x+1 y-1
+						if(!(x-1 < 0 || y+1 >= this.height)) {
+							if(this.buffer[x-1][y+1] == AutomatonState.EMPTY)
+							{
+								this.informations[x-1][y+1] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x+1][y-1];
+								this.informations[x+1][y-1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x-1][y+1] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x+1][y-1] = AutomatonState.EMPTY;
+							}
+						}
+						else
+						{
+							int[] newPos = this.moveToEmpty(x,  y);
+							if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+							{
+								this.informations[x][y] = this.informations[x+1][y-1];
+								this.informations[x+1][y-1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
+								this.buffer[x+1][y-1] = AutomatonState.EMPTY;
+							}
+							else 
+							{//bouge normalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
+								this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x+1][y-1];
+								this.informations[x+1][y-1] = 0;
+								this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x+1][y-1] = AutomatonState.EMPTY;
+							}
+						}
+						break;
+					case 6 : //x+1 y
+						if(!(x-1 < 0)) {
+							if(this.buffer[x-1][y] == AutomatonState.EMPTY)
+							{
+								this.informations[x-1][y] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x+1][y];
+								this.informations[x+1][y] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x+1][y] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x+1][y] = AutomatonState.EMPTY;
+							}
+						}
+						else
+						{
+							int[] newPos = this.moveToEmpty(x,  y);
+							if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+							{
+								this.informations[x][y] = this.informations[x+1][y];
+								this.informations[x+1][y] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
+								this.buffer[x+1][y] = AutomatonState.EMPTY;
+							}
+							else 
+							{//bouge normalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
+								this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x+1][y];
+								this.informations[x+1][y] = 0;
+								this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x+1][y] = AutomatonState.EMPTY;
+							}
+						}
+						break;
+					case 7 : //x+1 y+1
+						if(!(x-1 < 0 || y-1 < 0)) {
+							if(this.buffer[x-1][y-1] == AutomatonState.EMPTY)
+							{
+								this.informations[x-1][y-1] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x+1][y+1];
+								this.informations[x+1][y+1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x-1][y-1] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x+1][y+1] = AutomatonState.EMPTY;
+							}
+						}
+						else
+						{
+							int[] newPos = this.moveToEmpty(x,  y);
+							if(newPos[0]==x && newPos[1]==y) //cas ou la proie est entourée et pourchassée = RIP (elle se fait rattraper)
+							{
+								this.informations[x][y] = this.informations[x+1][y+1];
+								this.informations[x+1][y+1] = 0;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR;
+								this.buffer[x+1][y+1] = AutomatonState.EMPTY;
+							}
+							else 
+							{//bouge normalement ET ON FAIT BOUGER LE PREDATOR QUI CHASSE EN MEME TEMPS
+								this.informations[newPos[0]][newPos[1]] = this.informations[x][y];
+								this.informations[x][y] = this.informations[x+1][y+1];
+								this.informations[x+1][y+1] = 0;
+								this.buffer[newPos[0]][newPos[1]] = AutomatonState.AGENT_PREY_FLEEING;
+								this.buffer[x][y] = AutomatonState.AGENT_PREDATOR_HUNTING;
+								this.buffer[x+1][y+1] = AutomatonState.EMPTY;
+							}
+						}
+						break;
+					default:
+						break;
+
+					}
+				}
 			}
 			break;
 		default:
@@ -420,7 +717,7 @@ public class Agent extends CellularAutomaton
 			{
 			case 0 : //x-1 y-1
 				if(!(x-1 < 0 || y-1 < 0)) {
-					if(this.buffer[x-1][y-1]==AutomatonState.EMPTY)
+					if(this.buffer[x-1][y-1]==AutomatonState.EMPTY || this.buffer[x-1][y-1]==AutomatonState.FOREST_GRASS)
 					{
 						returnValue[0]= x-1; returnValue[1]=y-1;
 					}
@@ -428,15 +725,15 @@ public class Agent extends CellularAutomaton
 				break;	
 			case 1 : //x-1 y
 				if(!(x-1 < 0)) {
-					if(this.buffer[x-1][y-1]==AutomatonState.EMPTY && !(x-1 < 0))
+					if((this.buffer[x-1][y]==AutomatonState.EMPTY || this.buffer[x-1][y]==AutomatonState.FOREST_GRASS) && !(x-1 < 0))
 					{
 						returnValue[0]= x-1; returnValue[1]=y;
 					}
 				}
 				break;
 			case 2 : //x-1 y+1
-				if(!(x-1 < 0 || y+1 >= this.height)) {
-					if(this.buffer[x-1][y-1]==AutomatonState.EMPTY && !(x-1 < 0 || y+1 > height))
+				if((x-1 >= 0) && (y+1 < this.height)) {
+					if((this.buffer[x-1][y+1]==AutomatonState.EMPTY || this.buffer[x-1][y+1]==AutomatonState.FOREST_GRASS)  && (x-1 >= 0) && (y+1 < this.height))
 					{
 						returnValue[0]= x-1; returnValue[1]=y+1;
 					}
@@ -444,7 +741,7 @@ public class Agent extends CellularAutomaton
 				break;
 			case 3 : //x y-1
 				if(!(y-1 < 0)) {
-					if(this.buffer[x-1][y-1]==AutomatonState.EMPTY)
+					if(this.buffer[x][y-1]==AutomatonState.EMPTY || this.buffer[x][y-1]==AutomatonState.FOREST_GRASS)
 					{
 						returnValue[0]= x; returnValue[1]=y-1;
 					}
@@ -452,7 +749,7 @@ public class Agent extends CellularAutomaton
 				break;
 			case 4 : //x y+1
 				if(!(y+1 >= this.height)) {
-					if(this.buffer[x-1][y-1]==AutomatonState.EMPTY)
+					if(this.buffer[x][y+1]==AutomatonState.EMPTY || this.buffer[x][y+1]==AutomatonState.FOREST_GRASS)
 					{
 						returnValue[0]= x; returnValue[1]=y+1;
 					}
@@ -460,7 +757,7 @@ public class Agent extends CellularAutomaton
 				break;
 			case 5 : //x+1 y-1
 				if(!(x+1 >= this.height || y-1 < 0)) {
-					if(this.buffer[x-1][y-1]==AutomatonState.EMPTY)
+					if(this.buffer[x+1][y-1]==AutomatonState.EMPTY || this.buffer[x+1][y-1]==AutomatonState.FOREST_GRASS)
 					{
 						returnValue[0]= x+1; returnValue[1]=y-1;
 					}
@@ -468,7 +765,7 @@ public class Agent extends CellularAutomaton
 				break;
 			case 6 : //x+1 y
 				if(!(x+1 >= this.height)) {
-					if(this.buffer[x-1][y-1]==AutomatonState.EMPTY)
+					if(this.buffer[x+1][y]==AutomatonState.EMPTY || this.buffer[x+1][y]==AutomatonState.FOREST_GRASS)
 					{
 						returnValue[0]= x+1; returnValue[1]=y;
 					}
@@ -476,7 +773,7 @@ public class Agent extends CellularAutomaton
 				break;
 			case 7 : //x+1 y+1
 				if(!(x+1 >= this.width || y+1 >= this.height)) {
-					if(this.buffer[x-1][y-1]==AutomatonState.EMPTY)
+					if(this.buffer[x+1][y+1]==AutomatonState.EMPTY || this.buffer[x+1][y+1]==AutomatonState.FOREST_GRASS)
 					{
 						returnValue[0]= x+1; returnValue[1]=y+1;
 					}
@@ -491,138 +788,7 @@ public class Agent extends CellularAutomaton
 		return returnValue;
 	}
 
-	/*
-	 * On cherche la position de l'agent int�ressant dans le voisinage de VN
-	 * autour de l'�l�ment � la position x y donn�e
-	 * besoin de randomiser les x et y pour ne pas introduire un biais 
-	 * p/r � la direction dans laquelle on regarde en premier
-	 * besoin de racourcir
-	 * Renvoie la pos de la proie si pr�dateur en param 
-	 * Renvoie la pos de fuite si proie en param
-	 */
-	//	protected int[] posNeighborAgent(final int x, final int y)
-	//	{
-	//		//V1 de la poursuite/fuite : ne marche que pour la poursuite � v�rifier l'int�r�t par rapport � la V2 plus loin ci dessous
-	//		ArrayList<Integer[]> randTabPos = new ArrayList<Integer[]>(); // on introduit une liste de couples que l'on va randomiser
-	//		Integer[] tab = {(x+1+width)%width,(y+height)%height}; randTabPos.add(tab); //x+1,y
-	//		Integer[] tab2 = {(x+width)%width,(y+1+height)%height}; randTabPos.add(tab2); //x,y+1
-	//		Integer[] tab3 = {(x-1+width)%width,(y+height)%height}; randTabPos.add(tab3); //x-1,y
-	//		Integer[] tab4 = {(x+width)%width,(y-1+height)%height}; randTabPos.add(tab4); //x,y-1
-	//
-	//		Collections.shuffle(randTabPos); //on randomise les couples de positions (voisinage de VN)
-	//
-	//		if(this.buffer[x][y]==AutomatonState.AGENT_PREDATOR) 
-	//		{		
-	//			if(this.buffer[randTabPos.get(0)[0]][randTabPos.get(0)[1]]==AutomatonState.AGENT_PREY)
-	//			{
-	//				int[] tabRetour = {randTabPos.get(0)[0],randTabPos.get(0)[1]};
-	//				return tabRetour;
-	//			}
-	//			if(this.buffer[randTabPos.get(1)[0]][randTabPos.get(1)[1]]==AutomatonState.AGENT_PREY)
-	//			{
-	//				int[] tabRetour = {randTabPos.get(1)[0],randTabPos.get(1)[1]};
-	//				return tabRetour;
-	//			}
-	//			if(this.buffer[randTabPos.get(2)[0]][randTabPos.get(2)[1]]==AutomatonState.AGENT_PREY)
-	//			{
-	//				int[] tabRetour = {randTabPos.get(2)[0],randTabPos.get(2)[1]};
-	//				return tabRetour;
-	//			}
-	//			if(this.buffer[randTabPos.get(3)[0]][randTabPos.get(3)[1]]==AutomatonState.AGENT_PREY)
-	//			{
-	//				int[] tabRetour = {randTabPos.get(3)[0],randTabPos.get(3)[1]};
-	//				return tabRetour;
-	//			}
-	//		}
-	//		if(this.buffer[x][y]==AutomatonState.AGENT_PREY)
-	//		{		
-	//			//V2 de la fuite/pourchasse : avec un switch et une liste randomis�e pour ne pas introduire de biais
-	//			ArrayList<Integer> randInt = new ArrayList<Integer>(); 
-	//			randInt.add(0); randInt.add(1); randInt.add(2); randInt.add(3);
-	//			Collections.shuffle(randInt);
-	//			for(int i=0;i<4;i++)
-	//			{
-	//				switch(randInt.get(i))
-	//				{
-	//				case 0 :
-	//					if(this.buffer[(x+width)%width][(y+1+height)%height]==AutomatonState.AGENT_PREDATOR)
-	//					{
-	//						int[] returnTab = {(x+width)%width,(y-1+height)%height};
-	//						return returnTab;
-	//					}
-	//					break;
-	//				case 1 :
-	//					if(this.buffer[(x+1+width)%width][(y+height)%height]==AutomatonState.AGENT_PREDATOR)
-	//					{
-	//						int[] returnTab = {(x-1+width)%width,(y+height)%height};
-	//						return returnTab;
-	//					}
-	//					break;
-	//				case 2 :
-	//					if(this.buffer[(x+width)%width][(y-1+height)%height]==AutomatonState.AGENT_PREDATOR)
-	//					{
-	//						int[] returnTab = {(x+width)%width,(y+1+height)%height};
-	//						return returnTab;
-	//					}
-	//					break;
-	//				case 3 :
-	//					if(this.buffer[(x-1+width)%width][(y+height)%height]==AutomatonState.AGENT_PREDATOR)
-	//					{
-	//						int[] returnTab = {(x+1+width)%width,(y+height)%height};
-	//						return returnTab;
-	//					}
-	//					break;
-	//				}
-	//			}
-	//
-	//		}
-	//		int[] tabNull = {x,y};
-	//		//System.out.println("non trouv�");
-	//		return tabNull;
-	//	}
 
-	//	public int[] posNearestFood(final int x, final int y)
-	//	{		
-	//		ArrayList<Integer> randInt = new ArrayList<Integer>(); 
-	//		randInt.add(0); randInt.add(1); randInt.add(2); randInt.add(3);
-	//		Collections.shuffle(randInt);
-	//		for(int i=0;i<4;i++)
-	//		{
-	//			switch(randInt.get(i))
-	//			{
-	//			case 0 :
-	//				if(this.buffer[(x+width)%width][(y+1+height)%height]==AutomatonState.FOREST_GRASS)
-	//				{
-	//					int[] returnTab = {(x+width)%width,(y+1+height)%height};
-	//					return returnTab;
-	//				}
-	//				break;
-	//			case 1 :
-	//				if(this.buffer[(x+1+width)%width][(y+height)%height]==AutomatonState.FOREST_GRASS)
-	//				{
-	//					int[] returnTab = {(x+1+width)%width,(y+height)%height};
-	//					return returnTab;
-	//				}
-	//				break;
-	//			case 2 :
-	//				if(this.buffer[(x+width)%width][(y-1+height)%height]==AutomatonState.FOREST_GRASS)
-	//				{
-	//					int[] returnTab = {(x+width)%width,(y-1+height)%height};
-	//					return returnTab;
-	//				}
-	//				break;
-	//			case 3 :
-	//				if(this.buffer[(x-1+width)%width][(y+height)%height]==AutomatonState.FOREST_GRASS)
-	//				{
-	//					int[] returnTab = {(x-1+width)%width,(y+height)%height};
-	//					return returnTab;
-	//				}
-	//				break;
-	//			}
-	//		}
-	//		int[] tabNull = {x,y};
-	//		return tabNull;
-	//	}
 	protected boolean[] getNeighborhood(final int x, final int y, final AutomatonState state)
 	{
 		boolean[] neighbors = new boolean[8];
@@ -633,11 +799,11 @@ public class Agent extends CellularAutomaton
 			{
 				if (!(i == x && j == y))
 				{
-					if(i > width || i < 0 || j > height || j < 0)
+					if(i >= width || i < 0 || j >= height || j < 0)
 					{
 						continue;
 					}
-					if (this.buffer[i] [j] == state)
+					if (this.buffer[i][j] == state)
 					{
 
 						neighbors[n]=true;
