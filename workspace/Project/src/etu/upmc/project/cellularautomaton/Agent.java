@@ -435,7 +435,7 @@ public class Agent extends CellularAutomaton
 				}
 				break;
 			case 2 : //x-1 y+1
-				if(!(x-1 < 0 || y+1 > height)) {
+				if(!(x-1 < 0 || y+1 >= this.height)) {
 					if(this.buffer[x-1][y-1]==AutomatonState.EMPTY && !(x-1 < 0 || y+1 > height))
 					{
 						returnValue[0]= x-1; returnValue[1]=y+1;
@@ -451,7 +451,7 @@ public class Agent extends CellularAutomaton
 				}
 				break;
 			case 4 : //x y+1
-				if(!(y+1 > height)) {
+				if(!(y+1 >= this.height)) {
 					if(this.buffer[x-1][y-1]==AutomatonState.EMPTY)
 					{
 						returnValue[0]= x; returnValue[1]=y+1;
@@ -459,7 +459,7 @@ public class Agent extends CellularAutomaton
 				}
 				break;
 			case 5 : //x+1 y-1
-				if(!(x+1 > height || y-1 < 0)) {
+				if(!(x+1 >= this.height || y-1 < 0)) {
 					if(this.buffer[x-1][y-1]==AutomatonState.EMPTY)
 					{
 						returnValue[0]= x+1; returnValue[1]=y-1;
@@ -467,7 +467,7 @@ public class Agent extends CellularAutomaton
 				}
 				break;
 			case 6 : //x+1 y
-				if(!(x+1 > height)) {
+				if(!(x+1 >= this.height)) {
 					if(this.buffer[x-1][y-1]==AutomatonState.EMPTY)
 					{
 						returnValue[0]= x+1; returnValue[1]=y;
@@ -475,7 +475,7 @@ public class Agent extends CellularAutomaton
 				}
 				break;
 			case 7 : //x+1 y+1
-				if(!(x+1 > width || y+1 > height)) {
+				if(!(x+1 >= this.width || y+1 >= this.height)) {
 					if(this.buffer[x-1][y-1]==AutomatonState.EMPTY)
 					{
 						returnValue[0]= x+1; returnValue[1]=y+1;
