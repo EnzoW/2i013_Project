@@ -8,7 +8,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Observable;
 
-import etu.upmc.project.cellularautomaton.Agent;
 import etu.upmc.project.cellularautomaton.AutomatonState;
 import etu.upmc.project.cellularautomaton.CellularAutomaton;
 import etu.upmc.project.cellularautomaton.Forest;
@@ -37,14 +36,13 @@ public class World extends Observable
 	private int randomX[];
 	private int randomY[];
 	private static boolean running;
-	private AutomatonState[][] buffer;
+	private int[][] buffer;
 	private int[][] informations;
 	private double[][] elevation;
 	private ArrayList<CellularAutomaton> automatons;
 	private static StringBuilder stringBuilder;
 	private static boolean stats;
-
-
+	
 	/* ****************************************************************
 	 * 	Constructor
 	 * ****************************************************************/
@@ -74,35 +72,27 @@ public class World extends Observable
 		this.height = this.elevation.length;
 		this.randomX = new int[width];
 		this.randomY = new int[height];
-		this.buffer = new AutomatonState[width][height];
+		this.buffer = new int[width][height];
 		this.informations = new int[width][height];
 		this.automatons = new ArrayList<>();
 
-		this.automatons.add(new Agent(width, height, this.buffer, this.informations, this.elevation));
+//		this.automatons.add(new Agent(width, height, this.buffer, this.informations, this.elevation));
 		this.automatons.add(new Forest(width, height, this.buffer, this.informations, this.elevation));
 
 		for (int x = 0; x < this.width; x++)
 		{
+			this.randomX[x] = x;
 			for (int y = 0; y < this.height; y++)
 			{
-				this.buffer[x][y] = AutomatonState.EMPTY;
+				AutomatonState.setStates(this.buffer, x, y, AutomatonState.EMPTY);
 				this.informations[x][y] = 0;
+				this.randomY[y] = y;
 			}
 		}
 
 		for (CellularAutomaton cellularAutomaton : this.automatons)
 		{
 			cellularAutomaton.init();
-		}
-
-		for (int i = 0; i < this.width; i++)
-		{
-			this.randomX[i] = i;
-		}
-
-		for (int i = 0; i < this.height; i++)
-		{
-			this.randomY[i] = i;
 		}
 
 		EventInit eventInit = new EventInit() {
@@ -150,29 +140,6 @@ public class World extends Observable
 					for (int y : this.randomY)
 					{
 						this.step(x, y);
-
-						/* Stats */
-						if (World.stats) {
-							switch (this.buffer[x][y]) {
-							default:
-								break;
-							case AGENT_PREY:
-								nbPreys++;
-								break;
-							case AGENT_PREDATOR:
-								nbPredators++;
-								break;
-							case FOREST_TREE:
-								nbTrees++;
-								break;
-							case FOREST_TREE_BURNING:
-								nbTreesBurning++;
-								break;
-							case FOREST_GRASS:
-								nbGrasses++;
-								break;
-							}
-						}
 					}
 				}
 			}
@@ -185,29 +152,6 @@ public class World extends Observable
 					for (int x : this.randomX)
 					{
 						this.step(x, y);
-
-						/* Stats */
-						if (World.stats) {
-							switch (this.buffer[x][y]) {
-							default:
-								break;
-							case AGENT_PREY:
-								nbPreys++;
-								break;
-							case AGENT_PREDATOR:
-								nbPredators++;
-								break;
-							case FOREST_TREE:
-								nbTrees++;
-								break;
-							case FOREST_TREE_BURNING:
-								nbTreesBurning++;
-								break;
-							case FOREST_GRASS:
-								nbGrasses++;
-								break;
-							}
-						}
 					}
 				}
 			}
@@ -221,7 +165,7 @@ public class World extends Observable
 			EventUpdate eventUpdate = new EventUpdate() {
 
 				@Override
-				public AutomatonState[][] getBuffer() {
+				public int[][] getBuffer() {
 					return World.this.buffer;
 				}
 

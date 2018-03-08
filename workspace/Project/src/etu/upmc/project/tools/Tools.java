@@ -9,10 +9,6 @@ import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
-/**
- * @author Enzo
- *
- */
 public class Tools {
 
 	public static void shuffle(int[] array)

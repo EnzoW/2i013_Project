@@ -8,27 +8,25 @@ import etu.upmc.project.tools.Tools;
 
 public class Tree extends CommonObject {
 
-	public static void displayObjectAt(GL2 gl, AutomatonState cellState, float x, float y, double height, float offset, float stepX, float stepY, float lenX, float lenY, float normalizeHeight, float information)
+	public static void displayObjectAt(GL2 gl, int cellState, float x, float y, double height, float offset, float stepX, float stepY, float lenX, float lenY, float normalizeHeight, float information)
 	{
 		float treeHeight = 0;
-		
-		switch (cellState)
+
+		if (AutomatonState.isInState(cellState, AutomatonState.FOREST_TREE))
 		{
-		case FOREST_TREE:
 			gl.glColor3f(0.f,0.6f-(float)(0.2*Math.random()),0.f);
 			treeHeight = Tools.map(information, 0, Forest.MAX_GROW_TREE, 1, 5);
-			break;
-		case FOREST_TREE_BURNING:
+		}
+		else if (AutomatonState.isInState(cellState, AutomatonState.FOREST_TREE_BURNING))
+		{
 			gl.glColor3f(1.f-(float)(0.2*Math.random()),0.f,0.f);
 			treeHeight = Tools.map(information, 0, Forest.MAX_GROW_TREE, 1, 5);
-			break;
-		case FOREST_ASHES:
+		}
+		else if (AutomatonState.isInState(cellState, AutomatonState.FOREST_ASHES))
+		{
 			float gray = Tools.map(information, Forest.MIN_GROW_TREE, Forest.ASHES_DISP, 0, 0.5f);
 			gl.glColor3f(gray, gray, gray);
 			treeHeight = 1;			
-			break;
-		default:
-			break;
 		}
 
 		float altitude = (float)height * normalizeHeight ;

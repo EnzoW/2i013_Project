@@ -56,7 +56,7 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 	private float colors[][][];
 	private double maxEverHeightValue;
 	private double minEverHeightValue;
-	private AutomatonState[][] cellsStates;
+	private int[][] cellsStates;
 	private int width;
 	private int height;
 	private double[][] elevation; 
@@ -70,7 +70,7 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 	private void init()
 	{
 		this.colors = new float[this.width][this.height][3];
-		this.cellsStates = new AutomatonState[this.width][this.height];
+		this.cellsStates = new int[this.width][this.height];
 		this.informations = new int[this.width][this.height];
 		
 		System.out.println("Landscape contains " + this.width*this.height + " tiles. (" + this.width + "x" + this.height +")");
@@ -278,29 +278,22 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 					this.colors[x][y][2] = 1.f;
 				}
 				
-				switch (this.cellsStates[x][y])
+				if (AutomatonState.isInState(this.cellsStates[x][y], AutomatonState.FOREST_GRASS))
 				{
-				case FOREST_TREE:
-				case FOREST_ASHES:
-				case FOREST_TREE_BURNING:
-					Tree.displayObjectAt(gl, this.cellsStates[x][y], x, y, height, offset, stepX, stepY, lenX, lenY, normalizeHeight, this.informations[x][y]);
-					break;
-				case FOREST_GRASS:
-//					this.colors[x][y][0] = 158;
-//					this.colors[x][y][1] = 157;
-//					this.colors[x][y][2] = 36;
 					this.colors[x][y][0] = 0xFF;
 					this.colors[x][y][1] = 0xFF;
 					this.colors[x][y][2] = 0;
-					break;
-				case AGENT_PREDATOR:
-				case AGENT_PREY:
-					Agent.displayObjectAt(gl, this.cellsStates[x][y], x, y, height, offset, stepX, stepY, lenX, lenY, normalizeHeight);
-					break;
-				default:
-					break;
 				}
 
+				if (AutomatonState.isInState(this.cellsStates[x][y], AutomatonState.FOREST_TREE, AutomatonState.FOREST_TREE_BURNING, AutomatonState.FOREST_ASHES))
+				{
+					Tree.displayObjectAt(gl, this.cellsStates[x][y], x, y, height, offset, stepX, stepY, lenX, lenY, normalizeHeight, this.informations[x][y]);
+				}
+				else if (AutomatonState.isInState(this.cellsStates[x][y], AutomatonState.AGENT_PREY, AutomatonState.AGENT_PREDATOR))
+				{
+					Agent.displayObjectAt(gl, this.cellsStates[x][y], x, y, height, offset, stepX, stepY, lenX, lenY, normalizeHeight);
+				}
+				
 				gl.glColor3f(this.colors[x][y][0], this.colors[x][y][1], this.colors[x][y][2]);
 
 				// * if light is on

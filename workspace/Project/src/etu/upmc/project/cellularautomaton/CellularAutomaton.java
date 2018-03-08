@@ -8,7 +8,7 @@ public abstract class CellularAutomaton
 
 	protected int width;
 	protected int height;
-	protected AutomatonState[][] buffer;
+	protected int[][] buffer;
 	protected int[][] informations;
 	protected double[][] elevation;
 	
@@ -16,7 +16,7 @@ public abstract class CellularAutomaton
 	 * 	Constructor
 	 * ****************************************************************/
 	
-	public CellularAutomaton(int width, int height, AutomatonState[][] buffer, int[][] informations, double[][] elevation) 
+	public CellularAutomaton(int width, int height, int[][] buffer, int[][] informations, double[][] elevation) 
 	{
 		this.width = width;
 		this.height = height;
@@ -37,23 +37,23 @@ public abstract class CellularAutomaton
 	 * 	Private methods
 	 * ****************************************************************/
 	
-	protected int nbNeighborsVN(final int x, final int y, final AutomatonState state)
+	protected int nbNeighborsVN(final int x, final int y, final int state)
 	{
 		int nbNeighbors = 0;
 		int indexY = y - 1 >= 0 ? (y - 1) % this.height : this.height - 1;
 		int indexX = x - 1 >= 0 ? (x - 1) % this.width : this.width - 1;
 
-		nbNeighbors += this.buffer[x][indexY] == state ? 1 : 0;
+		nbNeighbors += AutomatonState.isInState(this.buffer[x][indexY], state) ? 1 : 0;
 		indexY = y + 1 >= 0 ? (y + 1) % this.height : this.height - 1;
-		nbNeighbors += this.buffer[x][indexY] == state ? 1 : 0;
-		nbNeighbors += this.buffer[indexX][y] == state ? 1 : 0;
+		nbNeighbors += AutomatonState.isInState(this.buffer[x][indexY], state) ? 1 : 0;
+		nbNeighbors += AutomatonState.isInState(this.buffer[indexX][y], state) ? 1 : 0;
 		indexX = x + 1 >= 0 ? (x + 1) % this.width : this.width - 1;
-		nbNeighbors += this.buffer[indexX][y] == state ? 1 : 0;
+		nbNeighbors += AutomatonState.isInState(this.buffer[indexX][y], state) ? 1 : 0;
 
 		return nbNeighbors;
 	}
 	
-	protected int nbNeighborsMoore(final int x, final int y, final AutomatonState state)
+	protected int nbNeighborsMoore(final int x, final int y, final int state)
 	{
 		int nbNeighbors = 0;
 		
@@ -65,7 +65,7 @@ public abstract class CellularAutomaton
 				{
 					int indexX = i >= 0 ? i % this.width : this.width - 1;
 					int indexY = j >= 0 ? j % this.height : this.height - 1;
-					nbNeighbors += this.buffer[indexX][indexY] == state ? 1 : 0;
+					nbNeighbors += AutomatonState.isInState(this.buffer[indexX][indexY], state) ? 1 : 0;
 				}
 			}
 		}
