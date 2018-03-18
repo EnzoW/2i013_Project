@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Observable;
 
-import etu.upmc.project.cellularautomaton.AutomatonState;
+import etu.upmc.project.cellularautomaton.Agent;
 import etu.upmc.project.cellularautomaton.CellularAutomaton;
 import etu.upmc.project.cellularautomaton.Forest;
 import etu.upmc.project.events.EventInit;
@@ -21,7 +21,7 @@ public class World extends Observable
 	 * 	Constants
 	 * ****************************************************************/
 
-	private static final int DELAY 						= 10;
+	private static final int DELAY 						= 100;
 	private static final double SCALING					= 0.2;
 	private static final double ALTITUDE_RATIO 			= 0.42;
 	private static final String FILENAME 				= "landscape_paris-200.png";
@@ -38,6 +38,7 @@ public class World extends Observable
 	private static boolean running;
 	private int[][] buffer;
 	private int[][] informations;
+	private boolean[][] agentsUpdated;
 	private double[][] elevation;
 	private ArrayList<CellularAutomaton> automatons;
 	private static StringBuilder stringBuilder;
@@ -74,9 +75,10 @@ public class World extends Observable
 		this.randomY = new int[height];
 		this.buffer = new int[width][height];
 		this.informations = new int[width][height];
+		this.agentsUpdated = new boolean[width][height];
 		this.automatons = new ArrayList<>();
 
-//		this.automatons.add(new Agent(width, height, this.buffer, this.informations, this.elevation));
+		this.automatons.add(new Agent(width, height, this.buffer, this.informations, this.elevation, this.agentsUpdated));
 		this.automatons.add(new Forest(width, height, this.buffer, this.informations, this.elevation));
 
 		for (int x = 0; x < this.width; x++)
@@ -84,9 +86,10 @@ public class World extends Observable
 			this.randomX[x] = x;
 			for (int y = 0; y < this.height; y++)
 			{
-				AutomatonState.setStates(this.buffer, x, y, AutomatonState.EMPTY);
+				this.buffer[x][y] = CellularAutomaton.EMPTY;
 				this.informations[x][y] = 0;
 				this.randomY[y] = y;
+				this.agentsUpdated[x][y] = false;
 			}
 		}
 
@@ -128,9 +131,26 @@ public class World extends Observable
 		int nbTreesBurning = 0;
 		int nbGrasses = 0;
 
+		EventUpdate eventUpdate = new EventUpdate() {
+
+			@Override
+			public int[][] getBuffer() {
+				return World.this.buffer;
+			}
+
+			@Override
+			public int[][] getInformations() {
+				return World.this.informations;
+			}
+
+		};
+		
 		/* Main automaton loop */
 		while (running)
 		{
+			this.setChanged();
+			this.notifyObservers(eventUpdate);
+
 			if (Math.random() > 0.5d)
 			{
 				Tools.shuffle(this.randomX);
@@ -162,23 +182,6 @@ public class World extends Observable
 				e.printStackTrace();
 			}
 
-			EventUpdate eventUpdate = new EventUpdate() {
-
-				@Override
-				public int[][] getBuffer() {
-					return World.this.buffer;
-				}
-
-				@Override
-				public int[][] getInformations() {
-					return World.this.informations;
-				}
-
-			};
-
-			this.setChanged();
-			this.notifyObservers(eventUpdate);
-
 			if (World.stats)
 			{
 				World.stringBuilder.append(iteration + "," + nbPreys + "," + nbPredators + "," + nbTrees + "," + nbTreesBurning + "," + nbGrasses + "\n");
@@ -189,6 +192,15 @@ public class World extends Observable
 				nbTreesBurning 	= 0;
 				nbGrasses 		= 0;
 			}
+			
+			for (int x = 0; x < this.width; x++)
+			{
+				for (int y = 0; y < this.height; y++)
+				{
+					this.agentsUpdated[x][y] = false;
+				}
+			}
+
 		}
 	}
 

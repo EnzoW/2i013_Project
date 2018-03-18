@@ -23,12 +23,13 @@ import javax.media.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.util.Animator;
 
 import etu.upmc.project.World;
-import etu.upmc.project.cellularautomaton.AutomatonState;
+import etu.upmc.project.cellularautomaton.CellularAutomaton;
 import etu.upmc.project.events.Event;
 import etu.upmc.project.events.EventInit;
 import etu.upmc.project.events.EventUpdate;
 import etu.upmc.project.graphics.objects.Agent;
 import etu.upmc.project.graphics.objects.Tree;
+import etu.upmc.project.tools.Tools;
 
 public class Displayer3D implements GLEventListener, KeyListener, MouseListener, Observer {
 
@@ -61,6 +62,7 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 	private int height;
 	private double[][] elevation; 
 	private int[][] informations;
+	private double minElevation;
 
 	public Displayer3D ()
 	{
@@ -88,26 +90,15 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 					this.minEverHeightValue = minHeightValue;
 			}
 		}
+		
+		this.minElevation = 0;
 
-		for ( int x = 0 ; x < this.width ; x++ )
+		for (int x = 0; x < this.width ; x++)
 		{
-			for ( int y = 0 ; y < this.height ; y++ )
+			for (int y = 0; y < this.height; y++)
 			{
-				float height = (float) this.elevation[x][y];
-
-				if ( height >= 0 )
-				{
-					this.colors[x][y][0] = height / ((float) this.maxEverHeightValue);
-					this.colors[x][y][1] = 0.9f + 0.1f * height / ((float) this.maxEverHeightValue);
-					this.colors[x][y][2] = height / ((float) this.maxEverHeightValue);
-				}
-				else
-				{
-					// water
-					this.colors[x][y][0] = -height;
-					this.colors[x][y][1] = -height;
-					this.colors[x][y][2] = 1.f;
-				}
+				if (this.elevation[x][y] < this.minElevation)
+					this.minElevation = this.elevation[x][y];
 			}
 		}
 
@@ -273,28 +264,29 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 				else
 				{
 					// water
-					this.colors[x][y][0] = (float) -height;
-					this.colors[x][y][1] = (float) -height;
+					this.colors[x][y][0] = 0;
+					this.colors[x][y][1] = 0;
 					this.colors[x][y][2] = 1.f;
 				}
 				
-				if (AutomatonState.isInState(this.cellsStates[x][y], AutomatonState.FOREST_GRASS))
+				if (CellularAutomaton.isInStates(this.cellsStates[x][y], CellularAutomaton.FOREST_GRASS))
 				{
 					this.colors[x][y][0] = 0xFF;
 					this.colors[x][y][1] = 0xFF;
 					this.colors[x][y][2] = 0;
 				}
 
-				if (AutomatonState.isInState(this.cellsStates[x][y], AutomatonState.FOREST_TREE, AutomatonState.FOREST_TREE_BURNING, AutomatonState.FOREST_ASHES))
+				if (CellularAutomaton.isInStates(this.cellsStates[x][y], CellularAutomaton.FOREST_TREE, CellularAutomaton.FOREST_TREE_BURNING, CellularAutomaton.FOREST_ASHES))
 				{
 					Tree.displayObjectAt(gl, this.cellsStates[x][y], x, y, height, offset, stepX, stepY, lenX, lenY, normalizeHeight, this.informations[x][y]);
 				}
-				else if (AutomatonState.isInState(this.cellsStates[x][y], AutomatonState.AGENT_PREY, AutomatonState.AGENT_PREDATOR))
+				else if (CellularAutomaton.isInStates(this.cellsStates[x][y], CellularAutomaton.AGENT_PREY, CellularAutomaton.AGENT_PREDATOR))
 				{
 					Agent.displayObjectAt(gl, this.cellsStates[x][y], x, y, height, offset, stepX, stepY, lenX, lenY, normalizeHeight);
 				}
 				
-				gl.glColor3f(this.colors[x][y][0], this.colors[x][y][1], this.colors[x][y][2]);
+				float alpha = height > 0 ? 1f : Tools.map((float) -this.elevation[x][y], 0, (float) -this.minElevation, 0.5f, 1);
+				gl.glColor4f(this.colors[x][y][0], this.colors[x][y][1], this.colors[x][y][2], alpha);
 
 				// * if light is on
 				if (MY_LIGHT_RENDERING)

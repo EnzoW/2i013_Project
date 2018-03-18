@@ -30,9 +30,10 @@ public class Main {
 
 		if (!cmd.hasOption(OPT_NO_HMI))
 		{
-			Displayer3D displayer = new Displayer3D();
-			world.addObserver(displayer);
-
+//			Displayer2D displayer2D = new Displayer2D();
+//			world.addObserver(displayer2D);
+			Displayer3D displayer3D = new Displayer3D();
+			world.addObserver(displayer3D);
 		}
 
 		world.init();
