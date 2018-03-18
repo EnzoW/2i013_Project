@@ -66,7 +66,6 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 
 	public Displayer3D ()
 	{
-
 	}
 
 	private void init()
@@ -116,7 +115,6 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 			smoothFactor[i] = 1.0f;
 
 		smoothingDistanceThreshold = 30; //30;
-
 	}
 
 	/**
@@ -135,7 +133,7 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 		canvas.addMouseListener(this);// register mouse callback functions
 		canvas.addKeyListener(this);// register keyboard callback functions
 		frame.add(canvas);
-		frame.setSize(1024, 768);
+		frame.setSize(840, 620);
 		frame.setResizable(false);
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {

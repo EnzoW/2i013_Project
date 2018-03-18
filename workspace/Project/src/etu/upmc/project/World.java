@@ -21,7 +21,7 @@ public class World extends Observable
 	 * 	Constants
 	 * ****************************************************************/
 
-	private static final int DELAY 						= 100;
+	private static final int DELAY 						= 10;
 	private static final double SCALING					= 0.2;
 	private static final double ALTITUDE_RATIO 			= 0.42;
 	private static final String FILENAME 				= "landscape_paris-200.png";

@@ -29,8 +29,6 @@ public class Tree extends CommonObject {
 			treeHeight = 1;			
 		}
 
-		treeHeight *=10;
-		
 		float altitude = (float)height * normalizeHeight ;
 
 		gl.glVertex3f( offset+x*stepX, offset+y*stepY, altitude);
