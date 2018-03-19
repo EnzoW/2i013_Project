@@ -6,6 +6,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import etu.upmc.project.graphics.Displayer2D;
 import etu.upmc.project.graphics.Displayer3D;
 
 public class Main {
@@ -26,7 +27,7 @@ public class Main {
 		options.addOption(OPT_NO_HMI, false, "Launch the program without HMI.");
 		options.addOption(OPT_STATS, false, "Enable statistics and create a csv file in stats/ after execution.");
 		CommandLine cmd = parser.parse(options, args);
-		World world = new World();
+		World world = new World(200, 200);
 
 		if (!cmd.hasOption(OPT_NO_HMI))
 		{

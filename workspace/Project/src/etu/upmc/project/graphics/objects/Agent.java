@@ -24,38 +24,39 @@ public class Agent extends CommonObject {
 	
 	public static void displayObjectAt(GL2 gl, int cellState, float x, float y, double height, float offset, float stepX, float stepY, float lenX, float lenY, float normalizeHeight)
 	{
-		normalizeHeight /= 10;
+		float altitude = (float)height * normalizeHeight ;
+		normalizeHeight /= 20;
 		
 		float[][] colors = CellularAutomaton.isInStates(cellState, CellularAutomaton.AGENT_PREDATOR, CellularAutomaton.AGENT_PREDATOR_HUNTING) ? COLORS_PREDATOR : COLORS_PREY;
-		
+
 		gl.glColor3f(colors[0][0], colors[0][1], colors[0][2]);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY-lenY, 0.f);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY-lenY, 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY-lenY, 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY-lenY, 0.f);
+		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY-lenY, altitude);
+		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY-lenY, altitude + 0.1f*normalizeHeight);
+		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY-lenY, altitude + 0.1f*normalizeHeight);
+		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY-lenY, altitude);
 
 		gl.glColor3f(colors[1][0], colors[1][1], colors[1][2]);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY+lenY, 0.f);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY+lenY, 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY+lenY, 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY+lenY, 0.f);
+		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY+lenY, altitude);
+		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY+lenY, altitude + 0.1f*normalizeHeight);
+		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY+lenY, altitude + 0.1f*normalizeHeight);
+		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY+lenY, altitude);
 
 		gl.glColor3f(colors[2][0], colors[2][1], colors[2][2]);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY-lenY, 0.f);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY-lenY, 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY+lenY, 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY+lenY, 0.f);
+		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY-lenY, altitude);
+		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY-lenY, altitude + 0.1f*normalizeHeight);
+		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY+lenY, altitude + 0.1f*normalizeHeight);
+		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY+lenY, altitude);
 
 		gl.glColor3f(colors[3][0], colors[3][1], colors[3][2]);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY+lenY, 0.f);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY+lenY, 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY-lenY, 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY-lenY, 0.f);
+		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY+lenY, altitude);
+		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY+lenY, altitude + 0.1f*normalizeHeight);
+		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY-lenY, altitude + 0.1f*normalizeHeight);
+		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY-lenY, altitude);
 
 		gl.glColor3f(colors[4][0], colors[4][1], colors[4][2]);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY-lenY, 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY+lenY, 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY+lenY, 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY-lenY, 0.1f*normalizeHeight);
+		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY-lenY, altitude + 0.1f*normalizeHeight);
+		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY+lenY, altitude + 0.1f*normalizeHeight);
+		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY+lenY, altitude + 0.1f*normalizeHeight);
+		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY-lenY, altitude + 0.1f*normalizeHeight);
 	}
 }

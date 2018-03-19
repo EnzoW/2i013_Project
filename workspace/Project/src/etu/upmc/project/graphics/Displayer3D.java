@@ -195,6 +195,8 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 		gl.glCullFace(GL.GL_FRONT);
 		gl.glEnable(GL.GL_CULL_FACE);
 		gl.glEnable(GL.GL_DITHER);
+		gl.glEnable(GL.GL_BLEND);
+		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 	}
 
 
@@ -302,7 +304,6 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 				{
 					if ( Math.min(Math.min(x, this.width-x-1),Math.min(y, this.height-y-1)) < smoothingDistanceThreshold )
 					{
-
 						for ( int i = 0 ; i < 4 ; i++ )
 						{
 							int xIt = i==1||i==2?1:0;
@@ -339,7 +340,7 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 							zValue = heightFactor*(float)altitude * smoothFactor[i];
 					}
 
-					gl.glVertex3f( offset+x*stepX+xSign*lenX, offset+y*stepY+ySign*lenY, zValue);
+					gl.glVertex3f(offset+x*stepX+xSign*lenX, offset+y*stepY+ySign*lenY, zValue);
 				}
 			}
 
@@ -422,7 +423,6 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 			{
 				public void run() { animator.stop();}
 			}.start();
-			World.stop();
 			break;
 		case KeyEvent.VK_V:
 			VIEW_FROM_ABOVE = !VIEW_FROM_ABOVE ;

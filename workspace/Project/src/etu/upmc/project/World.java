@@ -1,10 +1,5 @@
 package etu.upmc.project;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Observable;
 
@@ -13,6 +8,7 @@ import etu.upmc.project.cellularautomaton.CellularAutomaton;
 import etu.upmc.project.cellularautomaton.Forest;
 import etu.upmc.project.events.EventInit;
 import etu.upmc.project.events.EventUpdate;
+import etu.upmc.project.tools.HeightMapGenerator;
 import etu.upmc.project.tools.Tools;
 
 public class World extends Observable 
@@ -22,10 +18,6 @@ public class World extends Observable
 	 * ****************************************************************/
 
 	private static final int DELAY 						= 10;
-	private static final double SCALING					= 0.2;
-	private static final double ALTITUDE_RATIO 			= 0.42;
-	private static final String FILENAME 				= "landscape_paris-200.png";
-	private static final String STATS_FILE_PREFIX 		= "stats/project_";
 
 	/* ****************************************************************
 	 * 	Private Context
@@ -35,31 +27,20 @@ public class World extends Observable
 	private int height;
 	private int randomX[];
 	private int randomY[];
-	private static boolean running;
 	private int[][] buffer;
 	private int[][] informations;
 	private boolean[][] agentsUpdated;
 	private double[][] elevation;
 	private ArrayList<CellularAutomaton> automatons;
-	private static StringBuilder stringBuilder;
-	private static boolean stats;
 	
 	/* ****************************************************************
 	 * 	Constructor
 	 * ****************************************************************/
 
-	public World() 
+	public World(int width, int height) 
 	{
-		running = true;
-		World.stats = false;
-	}
-
-	public World(boolean stats)
-	{
-		this();
-		World.stringBuilder = new StringBuilder();
-		World.stringBuilder.append("# Format : nbPreys, nbPredators, nbTrees, nbTreesBurning, nbGrasses\n");
-		World.stats = true;
+		this.width = width;
+		this.height = height;
 	}
 
 	/* ****************************************************************
@@ -68,9 +49,11 @@ public class World extends Observable
 
 	public void init()
 	{
-		this.elevation = Tools.load(FILENAME, SCALING, ALTITUDE_RATIO);
-		this.width = this.elevation[0].length;
-		this.height = this.elevation.length;
+		this.elevation = HeightMapGenerator.GenerateAltitude(this.width, this.height);
+		
+		this.elevation = Tools.scaleAndCenter(this.elevation, 0.4, 0.5);
+		this.elevation = Tools.smoothLandscape(this.elevation);
+		
 		this.randomX = new int[width];
 		this.randomY = new int[height];
 		this.buffer = new int[width][height];
@@ -123,14 +106,6 @@ public class World extends Observable
 
 	public void run()
 	{
-		/* Statistics */
-		int iteration = 0;
-		int nbPreys = 0;
-		int nbPredators = 0;
-		int nbTrees = 0;
-		int nbTreesBurning = 0;
-		int nbGrasses = 0;
-
 		EventUpdate eventUpdate = new EventUpdate() {
 
 			@Override
@@ -146,7 +121,7 @@ public class World extends Observable
 		};
 		
 		/* Main automaton loop */
-		while (running)
+		while (true)
 		{
 			this.setChanged();
 			this.notifyObservers(eventUpdate);
@@ -181,17 +156,6 @@ public class World extends Observable
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-
-			if (World.stats)
-			{
-				World.stringBuilder.append(iteration + "," + nbPreys + "," + nbPredators + "," + nbTrees + "," + nbTreesBurning + "," + nbGrasses + "\n");
-				iteration++;
-				nbPreys 		= 0;
-				nbPredators 	= 0;
-				nbTrees	 		= 0;
-				nbTreesBurning 	= 0;
-				nbGrasses 		= 0;
-			}
 			
 			for (int x = 0; x < this.width; x++)
 			{
@@ -202,26 +166,6 @@ public class World extends Observable
 			}
 
 		}
-	}
-
-	public static void stop()
-	{
-		
-		if (World.stats) {
-			running = false;
-			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
-			Timestamp timestamp = new java.sql.Timestamp(System.currentTimeMillis());
-			File file = new File(STATS_FILE_PREFIX + simpleDateFormat.format(timestamp) + ".csv");
-			FileWriter fileWriter = null;
-			try {
-				fileWriter = new FileWriter(file);
-				fileWriter.write(stringBuilder.toString());
-				fileWriter.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} 
-		}
-		System.exit(0);
 	}
 
 	/* ****************************************************************

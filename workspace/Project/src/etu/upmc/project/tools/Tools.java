@@ -70,7 +70,7 @@ public class Tools {
 		return landscape;
 	}
 
-	public static double[][] scaleAndCenter(double[][] landscape, double __scaling, double landscapeAltitudeRatio) 
+	public static double[][] scaleAndCenter(double[][] landscape, double scaling, double landscapeAltitudeRatio) 
 	{
 		double[][] myLandscape = landscape.clone();
 
@@ -82,7 +82,7 @@ public class Tools {
 		for ( int x = 0 ; x != landscape.length ; x++ )
 			for ( int y = 0 ; y != landscape[0].length ; y++ )
 			{
-				if ( landscape[x][y] < minValue )
+				if (landscape[x][y] < minValue)
 					minValue = landscape[x][y];
 				else
 					if ( landscape[x][y] > maxValue )
@@ -97,7 +97,7 @@ public class Tools {
 				landscape[x][y] = landscape[x][y] - minValue;
 				landscape[x][y] *= normalizeFactor; // [0;1]
 				landscape[x][y] = landscape[x][y] - landscapeAltitudeRatio;
-				landscape[x][y] *= __scaling;
+				landscape[x][y] *= scaling;
 			}
 
 		return myLandscape;

@@ -7,7 +7,7 @@ public class Forest extends CellularAutomaton
 	 * 	Constants
 	 * ****************************************************************/
 
-	public static final int 	MAX_GROW_TREE 		= 1000;
+	public static final int 	MAX_GROW_TREE 		= 10000;
 	public static final int 	MIN_GROW_TREE 		= 20;
 	public static final int 	ASHES_DISP			= 500;
 	public static final int 	BURNING_ITERATIONS 	= 100;
