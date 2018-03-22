@@ -8,7 +8,7 @@ import etu.upmc.project.cellularautomaton.CellularAutomaton;
 import etu.upmc.project.cellularautomaton.Forest;
 import etu.upmc.project.events.EventInit;
 import etu.upmc.project.events.EventUpdate;
-import etu.upmc.project.tools.HeightMapGenerator;
+import etu.upmc.project.landscape.LandscapeGenerator;
 import etu.upmc.project.tools.Tools;
 
 public class World extends Observable 
@@ -31,6 +31,7 @@ public class World extends Observable
 	private int[][] informations;
 	private boolean[][] agentsUpdated;
 	private double[][] elevation;
+	private int[][] landscape;
 	private ArrayList<CellularAutomaton> automatons;
 	
 	/* ****************************************************************
@@ -49,20 +50,18 @@ public class World extends Observable
 
 	public void init()
 	{
-		this.elevation = HeightMapGenerator.GenerateAltitude(this.width, this.height);
-		
-		this.elevation = Tools.scaleAndCenter(this.elevation, 0.4, 0.5);
-		this.elevation = Tools.smoothLandscape(this.elevation);
-		
 		this.randomX = new int[width];
 		this.randomY = new int[height];
 		this.buffer = new int[width][height];
 		this.informations = new int[width][height];
+		this.elevation = new double[width][height];
 		this.agentsUpdated = new boolean[width][height];
 		this.automatons = new ArrayList<>();
 
+		this.landscape = LandscapeGenerator.generateLandscape(this.width, this.height, this.elevation);
+		
 		this.automatons.add(new Agent(width, height, this.buffer, this.informations, this.elevation, this.agentsUpdated));
-		this.automatons.add(new Forest(width, height, this.buffer, this.informations, this.elevation));
+		this.automatons.add(new Forest(width, height, this.buffer, this.informations, this.elevation, this.landscape));
 
 		for (int x = 0; x < this.width; x++)
 		{
@@ -98,6 +97,10 @@ public class World extends Observable
 				return World.this.elevation;
 			}
 
+			@Override
+			public int[][] getEnvironment() {
+				return World.this.landscape;
+			}
 		};
 
 		this.setChanged();
@@ -121,7 +124,7 @@ public class World extends Observable
 		};
 		
 		/* Main automaton loop */
-		while (true)
+		for (;;)
 		{
 			this.setChanged();
 			this.notifyObservers(eventUpdate);
@@ -164,7 +167,6 @@ public class World extends Observable
 					this.agentsUpdated[x][y] = false;
 				}
 			}
-
 		}
 	}
 

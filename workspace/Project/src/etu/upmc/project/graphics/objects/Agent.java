@@ -25,7 +25,7 @@ public class Agent extends CommonObject {
 	public static void displayObjectAt(GL2 gl, int cellState, float x, float y, double height, float offset, float stepX, float stepY, float lenX, float lenY, float normalizeHeight)
 	{
 		float altitude = (float)height * normalizeHeight ;
-		normalizeHeight /= 20;
+		normalizeHeight /= 10;
 		
 		float[][] colors = CellularAutomaton.isInStates(cellState, CellularAutomaton.AGENT_PREDATOR, CellularAutomaton.AGENT_PREDATOR_HUNTING) ? COLORS_PREDATOR : COLORS_PREY;
 

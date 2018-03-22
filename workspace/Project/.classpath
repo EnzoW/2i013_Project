@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/apache_ccli"/>
-	<classpathentry excluding="etu/upmc/project/events/DataTranslation.java|etu/upmc/project/cellularautomaton/AutomatonState.java" kind="src" path="src"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.USER_LIBRARY/jogl-2.0"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="libs/commons-cli-1.4.jar"/>
+	<classpathentry kind="lib" path="libs/gluegen-rt.jar"/>
+	<classpathentry kind="lib" path="libs/jogl-all.jar"/>
+	<classpathentry kind="lib" path="libs/nativewindow-core.jar"/>
+	<classpathentry kind="lib" path="libs/newt-core.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

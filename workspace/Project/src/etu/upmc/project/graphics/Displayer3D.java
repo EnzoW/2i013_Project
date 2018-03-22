@@ -29,6 +29,7 @@ import etu.upmc.project.events.EventInit;
 import etu.upmc.project.events.EventUpdate;
 import etu.upmc.project.graphics.objects.Agent;
 import etu.upmc.project.graphics.objects.Tree;
+import etu.upmc.project.landscape.LandscapeGenerator;
 import etu.upmc.project.tools.Tools;
 
 public class Displayer3D implements GLEventListener, KeyListener, MouseListener, Observer {
@@ -40,10 +41,12 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 	private static Animator animator; 
 
 	private float rotateX = 0.0f;
-	private float rotationVelocity = 0.0f; // 0.2f
-
+	private float rotateY = 0.0f;
+	private float rotateZ = -90.0f;
+	private float translateY = -44f;
+	private float translateX = 0;
+	private float translateZ = -130.0f;
 	float heightFactor; //64.0f; // was: 32.0f;
-	double heightBooster; // applied to landscape values. increase heights.
 
 	float offset;
 	float stepX;
@@ -62,15 +65,12 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 	private int height;
 	private double[][] elevation; 
 	private int[][] informations;
+	private int[][] environment;
 	private double minElevation;
-
-	public Displayer3D ()
-	{
-	}
 
 	private void init()
 	{
-		this.colors = new float[this.width][this.height][3];
+		this.colors = new float[this.width][this.height][4];
 		this.cellsStates = new int[this.width][this.height];
 		this.informations = new int[this.width][this.height];
 		
@@ -101,8 +101,7 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 			}
 		}
 
-		heightFactor = 32.0f; //64.0f; // was: 32.0f;
-		heightBooster = 4.0; // default: 2.0 // 6.0 makes nice high mountains.
+		heightFactor = 32.0f;
 
 		offset = -100.0f; // was: -40.
 		stepX = (-offset*2.0f) / this.width;
@@ -133,8 +132,9 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 		canvas.addMouseListener(this);// register mouse callback functions
 		canvas.addKeyListener(this);// register keyboard callback functions
 		frame.add(canvas);
-		frame.setSize(840, 620);
-		frame.setResizable(false);
+		frame.setSize(800, 600);
+		frame.setExtendedState(Frame.MAXIMIZED_BOTH);
+		frame.setResizable(true);
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				animator.stop();
@@ -163,6 +163,7 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 			this.width = event.getWidth();
 			this.height = event.getHeight();
 			this.elevation = event.getElevation();
+			this.environment = event.getEnvironment();
 			this.init();
 			this.run();
 		}
@@ -236,14 +237,15 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 		if ( VIEW_FROM_ABOVE == true )
 		{
 			// as seen from above, no rotation (debug mode)
-			gl.glTranslatef(0.0f, 0.0f, -500.0f); // 0,0,-5
+			gl.glTranslatef(0.0f, 0.0f, -250.0f); // 0,0,-5
 		}
 		else
 		{
 			// continuous rotation (default view) 
-			gl.glTranslatef(0.0f, -44.0f, -130.0f); // 0,0,-5
-			gl.glRotatef(rotateX, 0.0f, 1.0f, 0.0f);
-			gl.glRotatef(-90.f, 1.0f, 0.0f, 0.0f);
+			gl.glTranslatef(this.translateX, this.translateY, this.translateZ); // 0,0,-5
+			gl.glRotatef(this.rotateX, 0, 1, 0);
+			gl.glRotatef(this.rotateY, 0, 0, 1);
+			gl.glRotatef(this.rotateZ, 1, 0, 0);
 		}
 
 		// ** draw everything
@@ -253,20 +255,34 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 			for ( int y = 0 ; y < this.height-1 ; y++ )
 			{
 				double height = this.elevation[x][y];
-				float normalizeHeight = (smoothFactor[0] + smoothFactor[1] + smoothFactor[2] + smoothFactor[3]) / 4.f * (float)heightBooster * heightFactor;
+				float normalizeHeight = (smoothFactor[0] + smoothFactor[1] + smoothFactor[2] + smoothFactor[3]) / 4.f * heightFactor;
 
-				if ( height >= 0 )
+				switch (this.environment[x][y])
 				{
+				case LandscapeGenerator.ENVIRONMENT_WATER:
+					this.colors[x][y][0] = 0;
+					this.colors[x][y][1] = 0;
+					this.colors[x][y][2] = 0xFF;
+					this.colors[x][y][3] = Tools.map((float) -this.elevation[x][y], (float) LandscapeGenerator.WATER_ALTITUDE, (float) -this.minElevation, 1, 0.25f);
+					break;
+				case LandscapeGenerator.ENVIRONMENT_SAND:
+					this.colors[x][y][0] = 0xEF;
+					this.colors[x][y][1] = 0xDD;
+					this.colors[x][y][2] = 0x6F;
+					this.colors[x][y][3] = 0xFF;
+					break;
+				case LandscapeGenerator.ENVIRONMENT_VOLCANO:
+					this.colors[x][y][0] = 0xFF;
+					this.colors[x][y][1] = 0x00;
+					this.colors[x][y][2] = 0x00;
+					this.colors[x][y][3] = 0xFF;
+					break;
+				default:
 					this.colors[x][y][0] = (float) (height / this.maxEverHeightValue);
 					this.colors[x][y][1] = (float) (0.9f + 0.1f * height / this.maxEverHeightValue);
 					this.colors[x][y][2] = (float) (height / this.maxEverHeightValue);
-				}
-				else
-				{
-					// water
-					this.colors[x][y][0] = 0;
-					this.colors[x][y][1] = 0;
-					this.colors[x][y][2] = 1.f;
+					this.colors[x][y][3] = 0xFF;
+					break;
 				}
 				
 				if (CellularAutomaton.isInStates(this.cellsStates[x][y], CellularAutomaton.FOREST_GRASS))
@@ -285,8 +301,7 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 					Agent.displayObjectAt(gl, this.cellsStates[x][y], x, y, height, offset, stepX, stepY, lenX, lenY, normalizeHeight);
 				}
 				
-				float alpha = height > 0 ? 1f : Tools.map((float) -this.elevation[x][y], 0, (float) -this.minElevation, 0.5f, 1);
-				gl.glColor4f(this.colors[x][y][0], this.colors[x][y][1], this.colors[x][y][2], alpha);
+				gl.glColor4f(this.colors[x][y][0], this.colors[x][y][1], this.colors[x][y][2], this.colors[x][y][3]);
 
 				// * if light is on
 				if (MY_LIGHT_RENDERING)
@@ -331,10 +346,10 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 
 					float zValue = 0.f;
 
-					if ( VIEW_FROM_ABOVE == false )
+					if (VIEW_FROM_ABOVE == false)
 					{
-						double altitude = elevation[(x + xIt) % (this.width - 1)][( y + yIt) % (this.height - 1)] * heightBooster;
-						if ( altitude < 0 ) 
+						double altitude = elevation[(x + xIt) % (this.width - 1)][( y + yIt) % (this.height - 1)];
+						if (altitude <= LandscapeGenerator.WATER_ALTITUDE) 
 							zValue = 0;
 						else
 							zValue = heightFactor*(float)altitude * smoothFactor[i];
@@ -345,8 +360,6 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 			}
 
 		gl.glEnd();      		
-
-		rotateX += rotationVelocity; 
 	}
 
 	@Override
@@ -423,33 +436,35 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 			{
 				public void run() { animator.stop();}
 			}.start();
+			System.exit(0);
 			break;
 		case KeyEvent.VK_V:
 			VIEW_FROM_ABOVE = !VIEW_FROM_ABOVE ;
 			break;
 		case KeyEvent.VK_UP:
-			this.offset++;
+			this.translateZ++;
 			break;
 		case KeyEvent.VK_DOWN:
-			this.offset--;
+			this.translateZ--;
 			break;
-		case KeyEvent.VK_2:
-			heightBooster++;
+		case KeyEvent.VK_LEFT:
+			this.translateX++;
 			break;
-		case KeyEvent.VK_1:
-			if ( heightBooster > 0 )
-				heightBooster--;
-			break;
-		case KeyEvent.VK_Q:
-			rotationVelocity-=0.1;
-			break;
-		case KeyEvent.VK_D:
-			rotationVelocity+=0.1;
+		case KeyEvent.VK_RIGHT:
+			this.translateX--;
 			break;
 		case KeyEvent.VK_Z:
+			this.translateY--;
 			break;
 		case KeyEvent.VK_S:
-			break; 
+			this.translateY++;
+			break;
+		case KeyEvent.VK_Q:
+			rotateX += 2;
+			break;
+		case KeyEvent.VK_D:
+			rotateX -= 2;
+			break;
 		case KeyEvent.VK_H:
 			System.out.println(
 					"Help:\n" +
