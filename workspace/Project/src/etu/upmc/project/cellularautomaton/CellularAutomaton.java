@@ -15,6 +15,9 @@ public abstract class CellularAutomaton
 	public static final int AGENT_PREDATOR			= 1 << 5;
 	public static final int AGENT_PREY_FLEEING		= 1 << 6;
 	public static final int AGENT_PREDATOR_HUNTING	= 1 << 7;
+	public static final int AGENT_PREY_YOUNGLING    = 1 << 8;
+	public static final int AGENT_PREDATOR_YOUNGLING= 1 << 9;
+	public static final int GROUND_PREY_TRACKS      = 1 << 10;
 	
 	/* ****************************************************************
 	 * 	Private Context
