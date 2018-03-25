@@ -3,8 +3,6 @@ package etu.upmc.project.graphics;
 import java.awt.Frame;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Observable;
@@ -32,105 +30,101 @@ import etu.upmc.project.graphics.objects.Tree;
 import etu.upmc.project.landscape.LandscapeGenerator;
 import etu.upmc.project.tools.Tools;
 
-public class Displayer3D implements GLEventListener, KeyListener, MouseListener, Observer {
+public class Displayer3D implements GLEventListener, KeyListener, Observer {
 
-	private static GLCapabilities CAPS;  // GO FAST ???
+	/* ****************************************************************
+	 * 	Constants
+	 * ****************************************************************/
+	
+	public static final float HEIGHT_FACTOR = 32f;
 
-	private static boolean MY_LIGHT_RENDERING = false; // true: nicer but slower
-	private static boolean VIEW_FROM_ABOVE = false; // also deactivate altitudes
-	private static Animator animator; 
-
-	private float rotateX = 0.0f;
-	private float rotateY = 0.0f;
-	private float rotateZ = -90.0f;
-	private float translateY = -44f;
-	private float translateX = 0;
-	private float translateZ = -130.0f;
-	float heightFactor; //64.0f; // was: 32.0f;
-
-	float offset;
-	float stepX;
-	float stepY;
-	float lenX;
-	float lenY;
-
-	float smoothFactor[];
-	int smoothingDistanceThreshold;
-
+	/* ****************************************************************
+	 * 	Private context
+	 * ****************************************************************/
+	
+	private int width, height;
+	/* Data from automaton */
+	private int[][] cellsStates, informations, environment;
+	private double[][] elevation;	
+	private double maxEverHeightValue, minEverHeightValue;
+	/* Data to perform graphical display */
+	private float rotateX, rotateY, rotateZ;
+	private float translateX, translateY, translateZ;
 	private float colors[][][];
-	private double maxEverHeightValue;
-	private double minEverHeightValue;
-	private int[][] cellsStates;
-	private int width;
-	private int height;
-	private double[][] elevation; 
-	private int[][] informations;
-	private int[][] environment;
-	private double minElevation;
+	private boolean isDebugMode;
 
+	/* ****************************************************************
+	 * 	Private methods
+	 * ****************************************************************/
+	
 	private void init()
 	{
 		this.colors = new float[this.width][this.height][4];
 		this.cellsStates = new int[this.width][this.height];
 		this.informations = new int[this.width][this.height];
-		
+		this.rotateX = 0.0f;
+		this.rotateY = 0.0f;
+		this.rotateZ = -90.0f;
+		this.translateX = 0;
+		this.translateY = -50;
+		this.translateZ = -this.height / 2;
+		this.isDebugMode = false;
+
 		System.out.println("Landscape contains " + this.width*this.height + " tiles. (" + this.width + "x" + this.height +")");
 
-		for (int x = 0; x < this.width - 1; x++)
-		{
-			for (int y = 0; y < this.height - 1; y++)
-			{
-				double minHeightValue = Math.min(Math.min(elevation[x][y],elevation[x+1][y]),Math.min(elevation[x][y+1],elevation[x+1][y+1]));
-				double maxHeightValue = Math.max(Math.max(elevation[x][y],elevation[x+1][y]),Math.max(elevation[x][y+1],elevation[x+1][y+1])); 
-
-				if ( this.maxEverHeightValue < maxHeightValue )
-					this.maxEverHeightValue = maxHeightValue;
-				if ( this.minEverHeightValue > minHeightValue )
-					this.minEverHeightValue = minHeightValue;
-			}
-		}
-		
-		this.minElevation = 0;
-
-		for (int x = 0; x < this.width ; x++)
+		for (int x = 0; x < this.width; x++)
 		{
 			for (int y = 0; y < this.height; y++)
 			{
-				if (this.elevation[x][y] < this.minElevation)
-					this.minElevation = this.elevation[x][y];
+				int x2 = x + 1 >= this.width ? this.width - 1 : x + 1;
+				int y2 = y + 1 >= this.height ? this.height - 1 : y + 1;
+				double minHeightValue = Math.min(Math.min(elevation[x][y],elevation[x2][y]),Math.min(elevation[x][y2],elevation[x2][y2]));
+				double maxHeightValue = Math.max(Math.max(elevation[x][y],elevation[x2][y]),Math.max(elevation[x][y2],elevation[x2][y2])); 
+
+				this.maxEverHeightValue = Math.max(maxHeightValue, this.maxEverHeightValue);
+				this.minEverHeightValue = Math.min(minHeightValue, this.minEverHeightValue);
+
+				switch (this.environment[x][y])
+				{
+				case LandscapeGenerator.ENVIRONMENT_WATER:
+					this.colors[x][y][0] = 0;
+					this.colors[x][y][1] = 0;
+					this.colors[x][y][2] = 0xFF;
+					this.colors[x][y][3] = Tools.map((float) -this.elevation[x][y], (float) LandscapeGenerator.WATER_ALTITUDE, (float) -this.minEverHeightValue, 1, 0.25f);
+					break;
+				case LandscapeGenerator.ENVIRONMENT_SAND:
+					this.colors[x][y][0] = 0xEF;
+					this.colors[x][y][1] = 0xDD;
+					this.colors[x][y][2] = 0x6F;
+					this.colors[x][y][3] = 0xFF;
+					break;
+				case LandscapeGenerator.ENVIRONMENT_VOLCANO:
+//					this.colors[x][y][0] = 0xFF;
+//					this.colors[x][y][1] = 0x00;
+//					this.colors[x][y][2] = 0x00;
+//					this.colors[x][y][3] = 0xFF;
+//					break;
+				default:
+					this.colors[x][y][0] = (float) (this.elevation[x][y] / this.maxEverHeightValue);
+					this.colors[x][y][1] = (float) (0.9f + 0.1f * this.elevation[x][y] / this.maxEverHeightValue);
+					this.colors[x][y][2] = (float) (this.elevation[x][y] / this.maxEverHeightValue);
+					this.colors[x][y][3] = 0xFF;
+					break;
+				}
 			}
 		}
-
-		heightFactor = 32.0f;
-
-		offset = -100.0f; // was: -40.
-		stepX = (-offset*2.0f) / this.width;
-		stepY = (-offset*2.0f) / this.width;
-		lenX = stepX / 2f;
-		lenY = stepY / 2f;
-
-		smoothFactor = new float[4];
-		for ( int i = 0 ; i < 4 ; i++ )
-			smoothFactor[i] = 1.0f;
-
-		smoothingDistanceThreshold = 30; //30;
 	}
 
-	/**
-	 * 
-	 */
-	public void run()
+	private void run()
 	{
-		CAPS = new GLCapabilities(null); //!n
-		CAPS.setDoubleBuffered(true);  //!n
+		GLCapabilities glCaps = new GLCapabilities(null);
+		GLCanvas canvas = new GLCanvas(glCaps);
+		Frame frame = new Frame("Project");
+		Animator animator = new Animator(canvas);
 
-		final GLCanvas canvas = new GLCanvas(CAPS); // original
-
-		final Frame frame = new Frame("Project");
-		animator = new Animator(canvas);
+		glCaps.setDoubleBuffered(true);
 		canvas.addGLEventListener(this);
-		canvas.addMouseListener(this);// register mouse callback functions
-		canvas.addKeyListener(this);// register keyboard callback functions
+		canvas.addKeyListener(this);
 		frame.add(canvas);
 		frame.setSize(800, 600);
 		frame.setExtendedState(Frame.MAXIMIZED_BOTH);
@@ -143,10 +137,14 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 			}
 		});
 		frame.setVisible(true);
-		animator.setRunAsFastAsPossible(true); // GO FAST!  --- DOES It WORK? 
+		animator.setRunAsFastAsPossible(true);
 		animator.start();
 		canvas.requestFocus();
 	}
+	
+	/* ****************************************************************
+	 * 	Events
+	 * ****************************************************************/
 
 	@Override
 	public void update(Observable o, Object arg) 
@@ -178,6 +176,10 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 	}
 
 
+	/* ****************************************************************
+	 * 	OpenGL - Graphic render
+	 * ****************************************************************/
+	
 	@Override
 	public void init(GLAutoDrawable glDrawable) {
 		GL2 gl = glDrawable.getGL().getGL2();
@@ -196,6 +198,7 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 		gl.glCullFace(GL.GL_FRONT);
 		gl.glEnable(GL.GL_CULL_FACE);
 		gl.glEnable(GL.GL_DITHER);
+		// Transparency for water
 		gl.glEnable(GL.GL_BLEND);
 		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 	}
@@ -203,46 +206,18 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 
 	@Override
 	public void display(GLAutoDrawable gLDrawable) {
-
-		// ** clean screen
-
-		final GL2 gl = gLDrawable.getGL().getGL2();
+		GL2 gl = gLDrawable.getGL().getGL2();
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
 		gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
 		gl.glLoadIdentity();
 
-		// ** render all
-
-		// *** ADD LIGHT
-
-		if ( MY_LIGHT_RENDERING )
+		if (isDebugMode)
 		{
-			// Prepare light parameters.
-			float SHINE_ALL_DIRECTIONS = 1;
-			float[] lightPos = {40.f, 0.f, -300.f, SHINE_ALL_DIRECTIONS};
-			float[] lightColorAmbient = {0.2f, 0.2f, 0.2f, 1f};
-			float[] lightColorSpecular = {0.8f, 0.8f, 0.8f, 1f};
-
-			// Set light parameters.
-			gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_POSITION, lightPos, 0);
-			gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_AMBIENT, lightColorAmbient, 0);
-			gl.glLightfv(GL2.GL_LIGHT1, GL2.GL_SPECULAR, lightColorSpecular, 0);
-
-			// Enable lighting in GL.
-			gl.glEnable(GL2.GL_LIGHT1);
-			gl.glEnable(GL2.GL_LIGHTING);
-		}
-
-
-		if ( VIEW_FROM_ABOVE == true )
-		{
-			// as seen from above, no rotation (debug mode)
-			gl.glTranslatef(0.0f, 0.0f, -250.0f); // 0,0,-5
+			gl.glTranslatef(0, 0, -this.width);
 		}
 		else
 		{
-			// continuous rotation (default view) 
-			gl.glTranslatef(this.translateX, this.translateY, this.translateZ); // 0,0,-5
+			gl.glTranslatef(this.translateX, this.translateY, this.translateZ);
 			gl.glRotatef(this.rotateX, 0, 1, 0);
 			gl.glRotatef(this.rotateY, 0, 0, 1);
 			gl.glRotatef(this.rotateZ, 1, 0, 0);
@@ -251,113 +226,50 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 		// ** draw everything
 		gl.glBegin(GL2.GL_QUADS);                
 
-		for ( int x = 0 ; x < this.width-1 ; x++ )
-			for ( int y = 0 ; y < this.height-1 ; y++ )
+		for (int x = 0 ; x < this.width; x++)
+		{
+			for (int y = 0 ; y < this.height; y++)
 			{
-				double height = this.elevation[x][y];
-				float normalizeHeight = (smoothFactor[0] + smoothFactor[1] + smoothFactor[2] + smoothFactor[3]) / 4.f * heightFactor;
-
-				switch (this.environment[x][y])
-				{
-				case LandscapeGenerator.ENVIRONMENT_WATER:
-					this.colors[x][y][0] = 0;
-					this.colors[x][y][1] = 0;
-					this.colors[x][y][2] = 0xFF;
-					this.colors[x][y][3] = Tools.map((float) -this.elevation[x][y], (float) LandscapeGenerator.WATER_ALTITUDE, (float) -this.minElevation, 1, 0.25f);
-					break;
-				case LandscapeGenerator.ENVIRONMENT_SAND:
-					this.colors[x][y][0] = 0xEF;
-					this.colors[x][y][1] = 0xDD;
-					this.colors[x][y][2] = 0x6F;
-					this.colors[x][y][3] = 0xFF;
-					break;
-				case LandscapeGenerator.ENVIRONMENT_VOLCANO:
-					this.colors[x][y][0] = 0xFF;
-					this.colors[x][y][1] = 0x00;
-					this.colors[x][y][2] = 0x00;
-					this.colors[x][y][3] = 0xFF;
-					break;
-				default:
-					this.colors[x][y][0] = (float) (height / this.maxEverHeightValue);
-					this.colors[x][y][1] = (float) (0.9f + 0.1f * height / this.maxEverHeightValue);
-					this.colors[x][y][2] = (float) (height / this.maxEverHeightValue);
-					this.colors[x][y][3] = 0xFF;
-					break;
-				}
-				
 				if (CellularAutomaton.isInStates(this.cellsStates[x][y], CellularAutomaton.FOREST_GRASS))
 				{
-					this.colors[x][y][0] = 0xFF;
+					this.colors[x][y][0] = 0;
 					this.colors[x][y][1] = 0xFF;
 					this.colors[x][y][2] = 0;
 				}
 
 				if (CellularAutomaton.isInStates(this.cellsStates[x][y], CellularAutomaton.FOREST_TREE, CellularAutomaton.FOREST_TREE_BURNING, CellularAutomaton.FOREST_ASHES))
 				{
-					Tree.displayObjectAt(gl, this.cellsStates[x][y], x, y, height, offset, stepX, stepY, lenX, lenY, normalizeHeight, this.informations[x][y]);
+					Tree.displayObjectAt(gl, this.cellsStates[x][y], x - this.width / 2, y - this.height / 2, (float) this.elevation[x][y], this.informations[x][y]);
 				}
 				else if (CellularAutomaton.isInStates(this.cellsStates[x][y], CellularAutomaton.AGENT_PREY, CellularAutomaton.AGENT_PREDATOR))
 				{
-					Agent.displayObjectAt(gl, this.cellsStates[x][y], x, y, height, offset, stepX, stepY, lenX, lenY, normalizeHeight);
+					Agent.displayObjectAt(gl, this.cellsStates[x][y], x - this.width / 2, y - this.height / 2, (float) this.elevation[x][y]);
 				}
-				
+
 				gl.glColor4f(this.colors[x][y][0], this.colors[x][y][1], this.colors[x][y][2], this.colors[x][y][3]);
-
-				// * if light is on
-				if (MY_LIGHT_RENDERING)
-				{
-					gl.glMaterialfv(GL.GL_FRONT_AND_BACK, GL2.GL_AMBIENT, this.colors[x][y], 0);
-					gl.glMaterialfv(GL.GL_FRONT_AND_BACK, GL2.GL_DIFFUSE, this.colors[x][y], 0);
-					gl.glMaterialfv(GL.GL_FRONT_AND_BACK, GL2.GL_SPECULAR, this.colors[x][y], 0);
-					gl.glMateriali(GL.GL_FRONT_AND_BACK, GL2.GL_SHININESS, 4);
-					float[] colorBlack  = {0.0f,0.0f,0.0f,1.0f};
-					gl.glMaterialfv(GL.GL_FRONT_AND_BACK, GL2.GL_EMISSION, colorBlack, 0);
-				}
-
-				// Border visual smoothing : smooth altitudes near border (i.e. nicer rendering)
-				if (VIEW_FROM_ABOVE != true)
-				{
-					if ( Math.min(Math.min(x, this.width-x-1),Math.min(y, this.height-y-1)) < smoothingDistanceThreshold )
-					{
-						for ( int i = 0 ; i < 4 ; i++ )
-						{
-							int xIt = i==1||i==2?1:0;
-							int yIt = i==0||i==1?1:0;
-							smoothFactor[i] = (float)
-									Math.min(
-											Math.min( 1.0 , (double)Math.min(x+xIt,this.width-x+xIt)/(double)smoothingDistanceThreshold ) ,  // check x-axis
-											Math.min( 1.0 , (double)Math.min(y+yIt,this.height-y+yIt)/(double)smoothingDistanceThreshold )    // check y-axis
-											);
-						}	                            	
-					}
-					else
-					{
-						for ( int i = 0 ; i < 4 ; i++ )
-							smoothFactor[i] = 1.0f;
-					}
-				}
 
 				for ( int i = 0 ; i < 4 ; i++ )
 				{
-					int xIt = i==1||i==2?1:0;
-					int yIt = i==0||i==1?1:0;
-					float xSign = i==1||i==2?1.f:-1.f;
-					float ySign = i==0||i==1?1.f:-1.f;
+					int xIt = Math.min((i==1 || i == 2 ? 1 : 0) + x, this.width - 1);
+					int yIt = Math.min((i==0 || i == 1 ? 1 : 0) + y, this.height - 1);
+					float xSign = i == 1 || i == 2 ? 1 : -1;
+					float ySign = i == 0 || i == 1 ? 1 : -1;
 
 					float zValue = 0.f;
 
-					if (VIEW_FROM_ABOVE == false)
+					if (!isDebugMode)
 					{
-						double altitude = elevation[(x + xIt) % (this.width - 1)][( y + yIt) % (this.height - 1)];
+						double altitude = elevation[xIt][yIt] * HEIGHT_FACTOR;
 						if (altitude <= LandscapeGenerator.WATER_ALTITUDE) 
 							zValue = 0;
 						else
-							zValue = heightFactor*(float)altitude * smoothFactor[i];
+							zValue = (float) (altitude);
 					}
 
-					gl.glVertex3f(offset+x*stepX+xSign*lenX, offset+y*stepY+ySign*lenY, zValue);
+					gl.glVertex3f(x + xSign - this.width / 2, y + ySign - this.height / 2, zValue);
 				}
 			}
+		}
 
 		gl.glEnd();      		
 	}
@@ -376,55 +288,8 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 	}
 
 
-	/**
-	 * 
-	 */
 	@Override
 	public void dispose(GLAutoDrawable gLDrawable) {
-	}
-
-
-	@Override
-	public void mouseClicked(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-
-	}
-
-
-	@Override
-	public void mouseEntered(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-
-	}
-
-
-	@Override
-	public void mouseExited(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-
-	}
-
-
-	@Override
-	public void mousePressed(MouseEvent mouse)
-	{
-		/* example from doublebuf.java
-		    switch (mouse.getButton()) {
-		      case MouseEvent.BUTTON1:
-		        spinDelta = 2f;
-		        break;
-		      case MouseEvent.BUTTON2:
-		      case MouseEvent.BUTTON3:
-		        spinDelta = 0f;
-		        break;
-		    }
-		    /**/
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-
 	}
 
 
@@ -432,14 +297,10 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 	public void keyPressed(KeyEvent key) {
 		switch (key.getKeyCode()) {
 		case KeyEvent.VK_ESCAPE:
-			new Thread()
-			{
-				public void run() { animator.stop();}
-			}.start();
 			System.exit(0);
 			break;
 		case KeyEvent.VK_V:
-			VIEW_FROM_ABOVE = !VIEW_FROM_ABOVE ;
+			isDebugMode = !isDebugMode ;
 			break;
 		case KeyEvent.VK_UP:
 			this.translateZ++;
@@ -482,17 +343,9 @@ public class Displayer3D implements GLEventListener, KeyListener, MouseListener,
 		}
 	}
 
+	@Override
+	public void keyReleased(KeyEvent arg0) {}
 
 	@Override
-	public void keyReleased(KeyEvent arg0) {
-		// TODO Auto-generated method stub
-
-	}
-
-
-	@Override
-	public void keyTyped(KeyEvent arg0) {
-		// TODO Auto-generated method stub
-
-	}
+	public void keyTyped(KeyEvent arg0) {}
 }

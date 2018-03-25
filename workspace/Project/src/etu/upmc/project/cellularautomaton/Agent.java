@@ -412,7 +412,6 @@ public class Agent extends CellularAutomaton
 	}
 
 	private int[] getPredatorHungryCoord(final int x, final int y)
-
 	{
 		int LookOutDist = 10;
 		int ScoreGauche = 0;

@@ -1,62 +1,52 @@
-/**
- * 
- */
 package etu.upmc.project.graphics.objects;
 
 import javax.media.opengl.GL2;
 
 import etu.upmc.project.cellularautomaton.CellularAutomaton;
+import etu.upmc.project.graphics.Displayer3D;
 
-public class Agent extends CommonObject {
+public class Agent {
 
-	private static final float[][] COLORS_PREDATOR 	= 	{{0.5f, 0, 0},
-														{0.6f, 0, 0},
-														{0.55f, 0, 0},
-														{0.45f, 0, 0},
-														{0.5f, 0, 0}};
-	
-	private static final float[][] COLORS_PREY 		=   {{1f, 0, 1f},
-														{1f, 0, 1f},
-														{1f, 0, 1f},
-														{1f, 0, 1f},
-														{1f, 0, 1f}};
-	
-	
-	public static void displayObjectAt(GL2 gl, int cellState, float x, float y, double height, float offset, float stepX, float stepY, float lenX, float lenY, float normalizeHeight)
+	private static final float AGENT_SIZE = 0.5f;
+
+	private static final float[] COLORS_PREDATOR 			= {.5f, 0, .5f};
+	private static final float[] COLORS_PREY 				= {0, 0, 1};
+	private static final float[] COLORS_PREDATOR_HUNTING 	= {1, 0, 0};
+	private static final float[] COLORS_PREY_FLEEING 		= {0, 1, 1};
+
+
+	public static void displayObjectAt(GL2 gl, int cellState, float x, float y, float height)
 	{
-		float altitude = (float)height * normalizeHeight ;
-		normalizeHeight /= 10;
-		
-		float[][] colors = CellularAutomaton.isInStates(cellState, CellularAutomaton.AGENT_PREDATOR, CellularAutomaton.AGENT_PREDATOR_HUNTING) ? COLORS_PREDATOR : COLORS_PREY;
+		float[] colors = CellularAutomaton.isInStates(cellState, CellularAutomaton.AGENT_PREDATOR) ? COLORS_PREDATOR : 
+			CellularAutomaton.isInStates(cellState, CellularAutomaton.AGENT_PREDATOR_HUNTING) ? COLORS_PREDATOR_HUNTING :
+			CellularAutomaton.isInStates(cellState, CellularAutomaton.AGENT_PREY) ? COLORS_PREY : COLORS_PREY_FLEEING;
 
-		gl.glColor3f(colors[0][0], colors[0][1], colors[0][2]);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY-lenY, altitude);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY-lenY, altitude + 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY-lenY, altitude + 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY-lenY, altitude);
+		height *= Displayer3D.HEIGHT_FACTOR;
 
-		gl.glColor3f(colors[1][0], colors[1][1], colors[1][2]);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY+lenY, altitude);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY+lenY, altitude + 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY+lenY, altitude + 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY+lenY, altitude);
+		gl.glColor3f(colors[0], colors[1], colors[2]);
+		gl.glVertex3f(x - AGENT_SIZE, y - AGENT_SIZE, height);
+		gl.glVertex3f(x - AGENT_SIZE, y - AGENT_SIZE, height + 0.01f * Displayer3D.HEIGHT_FACTOR);
+		gl.glVertex3f(x + AGENT_SIZE, y - AGENT_SIZE, height + 0.01f * Displayer3D.HEIGHT_FACTOR);
+		gl.glVertex3f(x + AGENT_SIZE, y - AGENT_SIZE, height);
 
-		gl.glColor3f(colors[2][0], colors[2][1], colors[2][2]);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY-lenY, altitude);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY-lenY, altitude + 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY+lenY, altitude + 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY+lenY, altitude);
+		gl.glVertex3f(x + AGENT_SIZE, y + AGENT_SIZE, height);
+		gl.glVertex3f(x + AGENT_SIZE, y + AGENT_SIZE, height + 0.01f * Displayer3D.HEIGHT_FACTOR);
+		gl.glVertex3f(x - AGENT_SIZE, y + AGENT_SIZE, height + 0.01f * Displayer3D.HEIGHT_FACTOR);
+		gl.glVertex3f(x - AGENT_SIZE, y + AGENT_SIZE, height);
 
-		gl.glColor3f(colors[3][0], colors[3][1], colors[3][2]);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY+lenY, altitude);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY+lenY, altitude + 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY-lenY, altitude + 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY-lenY, altitude);
+		gl.glVertex3f(x + AGENT_SIZE, y - AGENT_SIZE, height);
+		gl.glVertex3f(x + AGENT_SIZE, y - AGENT_SIZE, height + 0.01f * Displayer3D.HEIGHT_FACTOR);
+		gl.glVertex3f(x + AGENT_SIZE, y + AGENT_SIZE, height + 0.01f * Displayer3D.HEIGHT_FACTOR);
+		gl.glVertex3f(x + AGENT_SIZE, y + AGENT_SIZE, height);
 
-		gl.glColor3f(colors[4][0], colors[4][1], colors[4][2]);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY-lenY, altitude + 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX-lenX, offset+y*stepY+lenY, altitude + 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY+lenY, altitude + 0.1f*normalizeHeight);
-		gl.glVertex3f( offset+x*stepX+lenX, offset+y*stepY-lenY, altitude + 0.1f*normalizeHeight);
+		gl.glVertex3f(x - AGENT_SIZE, y + AGENT_SIZE, height);
+		gl.glVertex3f(x - AGENT_SIZE, y + AGENT_SIZE, height + 0.01f * Displayer3D.HEIGHT_FACTOR);
+		gl.glVertex3f(x - AGENT_SIZE, y - AGENT_SIZE, height + 0.01f * Displayer3D.HEIGHT_FACTOR);
+		gl.glVertex3f(x - AGENT_SIZE, y - AGENT_SIZE, height);
+
+		gl.glVertex3f(x - AGENT_SIZE, y - AGENT_SIZE, height + 0.01f * Displayer3D.HEIGHT_FACTOR);
+		gl.glVertex3f(x - AGENT_SIZE, y + AGENT_SIZE, height + 0.01f * Displayer3D.HEIGHT_FACTOR);
+		gl.glVertex3f(x + AGENT_SIZE, y + AGENT_SIZE, height + 0.01f * Displayer3D.HEIGHT_FACTOR);
+		gl.glVertex3f(x + AGENT_SIZE, y - AGENT_SIZE, height + 0.01f * Displayer3D.HEIGHT_FACTOR);
 	}
 }

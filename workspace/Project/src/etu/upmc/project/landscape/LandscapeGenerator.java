@@ -6,16 +6,16 @@ public class LandscapeGenerator {
 	 * 	Constants
 	 * ****************************************************************/
 
-	public static final int ENVIRONMENT_WATER		= 1 << 0; // 1
-	public static final int ENVIRONMENT_SAND		= 1 << 1; // 2
-	public static final int ENVIRONMENT_FOREST		= 1 << 2; // 4
-	public static final int ENVIRONMENT_VOLCANO		= 1 << 3; // 8
+	public static final int ENVIRONMENT_WATER		= 1 << 0;
+	public static final int ENVIRONMENT_SAND		= 1 << 1;
+	public static final int ENVIRONMENT_FOREST		= 1 << 2;
+	public static final int ENVIRONMENT_VOLCANO		= 1 << 3;
 	
 	public static final double WATER_ALTITUDE 		= 0.1;
 	
-	private static final double SCALING 			= 1;
+	private static final double SCALING 			= 1.0;
 	private static final double ALTITUDE_RATIO 		= 0.3;
-	private static final double FOREST_ALTITUDE 	= 0.4;
+	private static final double FOREST_ALTITUDE 	= 0.6;
 	private static final int 	NB_MAX_VOLCANO		= 2;
 	private static final double FEATURE_SIZE 		= 64;
 

@@ -15,9 +15,9 @@ public class Forest extends CellularAutomaton
 	public static final int 	BURNING_ITERATIONS 	= 100;
 
 	private static final double DENSITY_TREES 		= 0.70d;
-	private static final double DENSITY_GRASS 		= 0.30d;
-	private static final double PROB_TREE_BORN		= 0.99999d;
-	private static final double PROB_TREE_BURN		= 0.99999d;
+	private static final double DENSITY_GRASS 		= 0.50d;
+	private static final double PROB_TREE_BORN		= 0.9999d;
+	private static final double PROB_TREE_BURN		= 0.9999d;
 
 	/* ****************************************************************
 	 * 	Private context
@@ -53,11 +53,11 @@ public class Forest extends CellularAutomaton
 						this.setStates(x, y, CellularAutomaton.FOREST_TREE);
 						this.informations[x][y] = (int) (Math.random() * (MAX_GROW_TREE - MIN_GROW_TREE) + MIN_GROW_TREE);
 					}
-//					if (DENSITY_GRASS >= Math.random()) 
-//					{
-//						this.setStates(x, y, CellularAutomaton.FOREST_GRASS);
-//						this.informations[x][y] = 0;
-//					}
+					if (DENSITY_GRASS >= Math.random()) 
+					{
+						this.setStates(x, y, CellularAutomaton.FOREST_GRASS);
+						this.informations[x][y] = 0;
+					}
 				}
 			}
 		}
@@ -76,7 +76,7 @@ public class Forest extends CellularAutomaton
 		}
 		else if (this.isOnlyInState(x, y, CellularAutomaton.FOREST_TREE))
 		{
-			if (super.nbNeighborsVN(x, y, CellularAutomaton.FOREST_TREE_BURNING) > (int)(Math.random() * 4) || Math.random() > PROB_TREE_BURN)
+			if (super.nbNeighborsMoore(x, y, CellularAutomaton.FOREST_TREE_BURNING) > (int)(Math.random() * 4) || Math.random() > PROB_TREE_BURN)
 			{
 				this.setStates(x, y, CellularAutomaton.FOREST_TREE_BURNING);
 				this.informations[x][y] = BURNING_ITERATIONS;

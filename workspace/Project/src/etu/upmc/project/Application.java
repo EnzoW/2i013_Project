@@ -27,7 +27,7 @@ public class Application {
 		options.addOption(OPT_NO_HMI, false, "Launch the program without HMI.");
 		options.addOption(OPT_STATS, false, "Enable statistics and create a csv file in stats/ after execution.");
 		CommandLine cmd = parser.parse(options, args);
-		World world = new World(200, 200);
+		World world = new World(300, 300);
 
 		if (!cmd.hasOption(OPT_NO_HMI))
 		{

@@ -4,11 +4,14 @@ import javax.media.opengl.GL2;
 
 import etu.upmc.project.cellularautomaton.CellularAutomaton;
 import etu.upmc.project.cellularautomaton.Forest;
+import etu.upmc.project.graphics.Displayer3D;
 import etu.upmc.project.tools.Tools;
 
-public class Tree extends CommonObject {
+public class Tree {
 
-	public static void displayObjectAt(GL2 gl, int cellState, float x, float y, double height, float offset, float stepX, float stepY, float lenX, float lenY, float normalizeHeight, float information)
+	private static final float TREE_SIZE = 0.25f;
+	
+	public static void displayObjectAt(GL2 gl, int cellState, float x, float y, float height, float information)
 	{
 		float treeHeight = 0;
 
@@ -29,16 +32,14 @@ public class Tree extends CommonObject {
 			treeHeight = 1;			
 		}
 
-		float altitude = (float)height * normalizeHeight ;
+		gl.glVertex3f(x, y, height * Displayer3D.HEIGHT_FACTOR);
+		gl.glVertex3f(x, y + TREE_SIZE, height * Displayer3D.HEIGHT_FACTOR + treeHeight);
+		gl.glVertex3f(x, y, height * Displayer3D.HEIGHT_FACTOR );
+		gl.glVertex3f(x, y - TREE_SIZE, height * Displayer3D.HEIGHT_FACTOR + treeHeight);
 
-		gl.glVertex3f( offset+x*stepX, offset+y*stepY, altitude);
-		gl.glVertex3f( offset+x*stepX-lenY/16.f, offset+y*stepY+lenY/2.f, altitude + treeHeight);
-		gl.glVertex3f( offset+x*stepX, offset+y*stepY, altitude );
-		gl.glVertex3f( offset+x*stepX+lenY/16.f, offset+y*stepY-lenY/2.f, altitude + treeHeight);
-
-		gl.glVertex3f( offset+x*stepX, offset+y*stepY, altitude );
-		gl.glVertex3f( offset+x*stepX-lenY/2.f, offset+y*stepY+lenY/16.f, altitude + treeHeight);
-		gl.glVertex3f( offset+x*stepX, offset+y*stepY, altitude );
-		gl.glVertex3f( offset+x*stepX+lenY/2.f, offset+y*stepY-lenY/16.f, altitude + treeHeight);
+		gl.glVertex3f(x, y, height * Displayer3D.HEIGHT_FACTOR );
+		gl.glVertex3f(x - TREE_SIZE, y, height * Displayer3D.HEIGHT_FACTOR + treeHeight);
+		gl.glVertex3f(x, y, height * Displayer3D.HEIGHT_FACTOR );
+		gl.glVertex3f(x + TREE_SIZE, y, height * Displayer3D.HEIGHT_FACTOR + treeHeight);
 	}
 }
