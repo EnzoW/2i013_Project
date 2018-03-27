@@ -48,10 +48,14 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 	private double[][] elevation;	
 	private double maxEverHeightValue, minEverHeightValue;
 	/* Data to perform graphical display */
+	private Frame frame;
 	private float rotateX, rotateY, rotateZ;
 	private float translateX, translateY, translateZ;
 	private float colors[][][];
 	private boolean isDebugMode;
+	/* FPS */
+	private int it, lastItStamp;
+    private long lastTimeStamp;
 
 	/* ****************************************************************
 	 * 	Private methods
@@ -69,6 +73,9 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 		this.translateY = -50;
 		this.translateZ = -this.height / 2;
 		this.isDebugMode = false;
+		this.it = 0;
+		this.lastItStamp = 0;
+		this.lastItStamp = 0;
 
 		System.out.println("Landscape contains " + this.width*this.height + " tiles. (" + this.width + "x" + this.height +")");
 
@@ -83,34 +90,6 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 
 				this.maxEverHeightValue = Math.max(maxHeightValue, this.maxEverHeightValue);
 				this.minEverHeightValue = Math.min(minHeightValue, this.minEverHeightValue);
-
-				switch (this.environment[x][y])
-				{
-				case LandscapeGenerator.ENVIRONMENT_WATER:
-					this.colors[x][y][0] = 0;
-					this.colors[x][y][1] = 0;
-					this.colors[x][y][2] = 0xFF;
-					this.colors[x][y][3] = Tools.map((float) -this.elevation[x][y], (float) LandscapeGenerator.WATER_ALTITUDE, (float) -this.minEverHeightValue, 1, 0.25f);
-					break;
-				case LandscapeGenerator.ENVIRONMENT_SAND:
-					this.colors[x][y][0] = 0xEF;
-					this.colors[x][y][1] = 0xDD;
-					this.colors[x][y][2] = 0x6F;
-					this.colors[x][y][3] = 0xFF;
-					break;
-				case LandscapeGenerator.ENVIRONMENT_VOLCANO:
-//					this.colors[x][y][0] = 0xFF;
-//					this.colors[x][y][1] = 0x00;
-//					this.colors[x][y][2] = 0x00;
-//					this.colors[x][y][3] = 0xFF;
-//					break;
-				default:
-					this.colors[x][y][0] = (float) (this.elevation[x][y] / this.maxEverHeightValue);
-					this.colors[x][y][1] = (float) (0.9f + 0.1f * this.elevation[x][y] / this.maxEverHeightValue);
-					this.colors[x][y][2] = (float) (this.elevation[x][y] / this.maxEverHeightValue);
-					this.colors[x][y][3] = 0xFF;
-					break;
-				}
 			}
 		}
 	}
@@ -119,9 +98,9 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 	{
 		GLCapabilities glCaps = new GLCapabilities(null);
 		GLCanvas canvas = new GLCanvas(glCaps);
-		Frame frame = new Frame("Project");
 		Animator animator = new Animator(canvas);
-
+		this.frame = new Frame("Project");
+		
 		glCaps.setDoubleBuffered(true);
 		canvas.addGLEventListener(this);
 		canvas.addKeyListener(this);
@@ -206,6 +185,16 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 
 	@Override
 	public void display(GLAutoDrawable gLDrawable) {
+		if (System.currentTimeMillis() - lastTimeStamp >= 1000)
+		{
+			int fps = this.it - this.lastItStamp;
+			this.lastItStamp = this.it;
+			this.lastTimeStamp = System.currentTimeMillis();
+			this.frame.setTitle("Project ~ " + fps + " FPS");
+		}
+		
+		this.it++;
+		
 		GL2 gl = gLDrawable.getGL().getGL2();
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
 		gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
@@ -213,7 +202,7 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 
 		if (isDebugMode)
 		{
-			gl.glTranslatef(0, 0, -this.width);
+			gl.glTranslatef(0, 0, -this.width - 25);
 		}
 		else
 		{
@@ -230,6 +219,34 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 		{
 			for (int y = 0 ; y < this.height; y++)
 			{
+				switch (this.environment[x][y])
+				{
+				case LandscapeGenerator.ENVIRONMENT_WATER:
+					this.colors[x][y][0] = 0;
+					this.colors[x][y][1] = 0;
+					this.colors[x][y][2] = 0xFF;
+					this.colors[x][y][3] = Tools.map((float) -this.elevation[x][y], (float) LandscapeGenerator.WATER_ALTITUDE, (float) -this.minEverHeightValue, 1, 0.25f);
+					break;
+				case LandscapeGenerator.ENVIRONMENT_SAND:
+					this.colors[x][y][0] = 0xEF;
+					this.colors[x][y][1] = 0xDD;
+					this.colors[x][y][2] = 0x6F;
+					this.colors[x][y][3] = 0xFF;
+					break;
+				case LandscapeGenerator.ENVIRONMENT_VOLCANO:
+//					this.colors[x][y][0] = 0xFF;
+//					this.colors[x][y][1] = 0x00;
+//					this.colors[x][y][2] = 0x00;
+//					this.colors[x][y][3] = 0xFF;
+//					break;
+				default:
+					this.colors[x][y][0] = (float) (this.elevation[x][y] / this.maxEverHeightValue);
+					this.colors[x][y][1] = (float) (0.9f + 0.1f * this.elevation[x][y] / this.maxEverHeightValue);
+					this.colors[x][y][2] = (float) (this.elevation[x][y] / this.maxEverHeightValue);
+					this.colors[x][y][3] = 0xFF;
+					break;
+				}
+				
 				if (CellularAutomaton.isInStates(this.cellsStates[x][y], CellularAutomaton.FOREST_GRASS))
 				{
 					this.colors[x][y][0] = 0;
@@ -241,7 +258,8 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 				{
 					Tree.displayObjectAt(gl, this.cellsStates[x][y], x - this.width / 2, y - this.height / 2, (float) this.elevation[x][y], this.informations[x][y]);
 				}
-				else if (CellularAutomaton.isInStates(this.cellsStates[x][y], CellularAutomaton.AGENT_PREY, CellularAutomaton.AGENT_PREDATOR))
+				else if (CellularAutomaton.isInStates(this.cellsStates[x][y], CellularAutomaton.AGENT_PREY, CellularAutomaton.AGENT_PREDATOR, CellularAutomaton.AGENT_PREY_FLEEING, 
+								CellularAutomaton.AGENT_PREDATOR_HUNTING, CellularAutomaton.AGENT_PREY_YOUNGLING, CellularAutomaton.AGENT_PREDATOR_YOUNGLING))
 				{
 					Agent.displayObjectAt(gl, this.cellsStates[x][y], x - this.width / 2, y - this.height / 2, (float) this.elevation[x][y]);
 				}

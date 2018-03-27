@@ -123,6 +123,8 @@ public class World extends Observable
 
 		};
 		
+		long speedCounter = 0;
+		
 		/* Main automaton loop */
 		for (;;)
 		{
@@ -137,7 +139,7 @@ public class World extends Observable
 					Tools.shuffle(this.randomY);
 					for (int y : this.randomY)
 					{
-						this.step(x, y);
+						this.step(x, y, speedCounter);
 					}
 				}
 			}
@@ -149,11 +151,11 @@ public class World extends Observable
 					Tools.shuffle(this.randomX);
 					for (int x : this.randomX)
 					{
-						this.step(x, y);
+						this.step(x, y, speedCounter);
 					}
 				}
 			}
-
+			
 			try {
 				Thread.sleep(DELAY);
 			} catch (InterruptedException e) {
@@ -167,6 +169,13 @@ public class World extends Observable
 					this.agentsUpdated[x][y] = false;
 				}
 			}
+			
+			if (speedCounter == Long.MAX_VALUE)
+			{
+				speedCounter = 0;
+			}
+			
+			speedCounter++;
 		}
 	}
 
@@ -174,11 +183,14 @@ public class World extends Observable
 	 * 	Private Methods
 	 * ****************************************************************/
 
-	private void step(final int x, final int y)
+	private void step(final int x, final int y, long speedCounter)
 	{
 		for (CellularAutomaton cellularAutomaton : this.automatons)
 		{
-			cellularAutomaton.step(x, y);
+			if (speedCounter % cellularAutomaton.getSpeed() == 0)
+			{
+				cellularAutomaton.step(x, y);
+			}
 		}
 	}
 }

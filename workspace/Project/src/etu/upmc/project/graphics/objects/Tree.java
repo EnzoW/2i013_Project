@@ -27,7 +27,7 @@ public class Tree {
 		}
 		else if (CellularAutomaton.isInStates(cellState, CellularAutomaton.FOREST_ASHES))
 		{
-			float gray = Tools.map(information, Forest.MIN_GROW_TREE, Forest.ASHES_DISP, 0, 0.5f);
+			float gray = Tools.map(information, 0, Forest.ASHES_DISP, 0, 0.5f);
 			gl.glColor3f(gray, gray, gray);
 			treeHeight = 1;			
 		}

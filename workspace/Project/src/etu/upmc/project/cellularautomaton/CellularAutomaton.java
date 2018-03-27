@@ -28,18 +28,35 @@ public abstract class CellularAutomaton
 	protected int[][] buffer;
 	protected int[][] informations;
 	protected double[][] elevation;
+	protected int speed;
 	
 	/* ****************************************************************
 	 * 	Constructor
 	 * ****************************************************************/
 	
-	public CellularAutomaton(int width, int height, int[][] buffer, int[][] informations, double[][] elevation) 
+	/**
+	 * 
+	 * @param width 
+	 * 			The global width of the world.
+	 * @param height
+	 * 			The global height of the world. 
+	 * @param buffer
+	 * 			The common buffer which containes all CAs states.
+	 * @param informations
+	 * 			An additional buffer to store informations.
+	 * @param elevation
+	 * 			The terrain elevation.
+	 * @param speed
+	 * 			The execution speed of the automaton. The automaton will be updated all the "speed" iterations.
+	 */
+	public CellularAutomaton(int width, int height, int[][] buffer, int[][] informations, double[][] elevation, int speed) 
 	{
 		this.width = width;
 		this.height = height;
 		this.buffer = buffer;
 		this.informations = informations;
 		this.elevation = elevation;
+		this.speed = speed;
 	}
 	
 	/* ****************************************************************
@@ -53,6 +70,11 @@ public abstract class CellularAutomaton
 	/* ****************************************************************
 	 * 	Public methods
 	 * ****************************************************************/
+	
+	public int getSpeed()
+	{
+		return this.speed;
+	}
 	
 	public static boolean isInStates(int value, int... states)
 	{
@@ -94,6 +116,11 @@ public abstract class CellularAutomaton
 	
 	protected void addStates(int x, int y, int states)
 	{
+		if (!this.isOnlyInState(x, y, EMPTY) && !this.isOnlyInState(x, y, FOREST_GRASS))
+		{
+			throw new IllegalArgumentException(CellularAutomaton.class.getSimpleName() + " : Cannot add a state to an non-empty cell.");
+		}
+		
 		this.buffer[x][y] |= states;
 	}
 
@@ -105,6 +132,10 @@ public abstract class CellularAutomaton
 	
 	protected void removeStates(int x, int y, int states)
 	{
+		if (!this.isInState(x, y, states))
+		{
+			throw new IllegalArgumentException(CellularAutomaton.class.getSimpleName() + " : Cannot remove the state. The cell is not in.");
+		}
 		this.buffer[x][y] &= ~states;
 	}
 	
