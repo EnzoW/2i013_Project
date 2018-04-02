@@ -28,6 +28,7 @@ import etu.upmc.project.events.EventUpdate;
 import etu.upmc.project.graphics.objects.Agent;
 import etu.upmc.project.graphics.objects.Tree;
 import etu.upmc.project.landscape.LandscapeGenerator;
+import etu.upmc.project.log.Log;
 import etu.upmc.project.tools.Tools;
 
 public class Displayer3D implements GLEventListener, KeyListener, Observer {
@@ -80,7 +81,7 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 		this.lastItStamp = 0;
 		this.lastItStamp = 0;
 
-		System.out.println("Landscape contains " + this.width*this.height + " tiles. (" + this.width + "x" + this.height +")");
+		Log.info("Landscape contains " + this.width*this.height + " tiles. (" + this.width + "x" + this.height +")");
 
 		for (int x = 0; x < this.width; x++)
 		{

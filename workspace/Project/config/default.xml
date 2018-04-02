@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+	<comment>Project - 2i013</comment>
+	<!-- Speeds -->
+	<entry key="SPEED_FOREST">			1</entry>
+	<entry key="SPEED_AGENTS">			10</entry>
+	
+	<!-- Forest  -->
+	<entry key="DENSITY_TREES">			0.70</entry>
+	<entry key="DENSITY_GRASS">			0.50</entry>
+	<entry key="BURNING_FACTOR">		50</entry>
+	<entry key="PROB_TREE_BURN">		0.9999</entry>
+	<entry key="PROB_TREE_BORN">		0.9999</entry>
+	<entry key="PROB_GRASS_BORN">		0.999</entry>
+	
+	<!-- Agents -->
+	<entry key="DENSITY_AGENTS">		0.10</entry>
+	<entry key="PROB_AGENT_MOVE">		0.20</entry>
+	<entry key="PROB_PREY_FLEE">		0.95</entry>
+	<entry key="PROB_PREDATOR_HUNT">	0.75</entry>
+	<entry key="PREY_NATALITY_RATE">	0.05</entry>
+	<entry key="PREDATOR_NATALITY_RATE">0.01</entry>
+	<entry key="PREY_GROWING_TIME">		10</entry>
+	<entry key="PREDATOR_GROWING_TIME">	10</entry>
+	<entry key="PREY_HUNGER_LIMIT">		1000</entry>
+	<entry key="PREDATOR_HUNGER_LIMIT">	1000</entry>
+	
+	<!-- Landscape -->
+	<entry key="ALTITUDE_RATIO">		0.30</entry>
+	<entry key="WATER_ALTITUDE">		0.10</entry>
+	<entry key="FOREST_ALTITUDE">		0.60</entry>
+	<entry key="NB_MAX_VOLCANO">		2</entry>
+	<entry key="FEATURE_SIZE">			64</entry>
+	<entry key="SCALING">				1</entry>
+</properties>

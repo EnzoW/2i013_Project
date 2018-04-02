@@ -1,22 +1,36 @@
 package etu.upmc.project.config;
 
 public enum Constants {
-
-	;
 	
-	private String value;
+	/* Speeds */
+	SPEED_FOREST,
+	SPEED_AGENTS,
 	
-	private Constants(String value) {
-		this.value = value;
-	}
+	/* Forest */
+	DENSITY_TREES,
+	DENSITY_GRASS,
+	BURNING_FACTOR,
+	PROB_TREE_BURN,
+	PROB_TREE_BORN,
+	PROB_GRASS_BORN,
 	
-	public String getValue()
-	{
-		return this.value;
-	}
+	/* Agents */
+	DENSITY_AGENTS,
+	PROB_AGENT_MOVE,
+	PROB_PREY_FLEE,
+	PROB_PREDATOR_HUNT,
+	PREY_NATALITY_RATE,
+	PREDATOR_NATALITY_RATE,
+	PREY_GROWING_TIME,
+	PREDATOR_GROWING_TIME,
+	PREY_HUNGER_LIMIT,
+	PREDATOR_HUNGER_LIMIT,
 	
-	public void setValue(String value)
-	{
-		this.value = value;
-	}
+	/* Landscape */
+	ALTITUDE_RATIO,
+	WATER_ALTITUDE,
+	FOREST_ALTITUDE,
+	NB_MAX_VOLCANO,
+	FEATURE_SIZE,
+	SCALING
 }

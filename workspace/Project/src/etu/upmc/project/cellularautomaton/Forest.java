@@ -1,5 +1,7 @@
 package etu.upmc.project.cellularautomaton;
 
+import etu.upmc.project.config.Config;
+import etu.upmc.project.config.Constants;
 import etu.upmc.project.landscape.LandscapeGenerator;
 
 public class Forest extends CellularAutomaton
@@ -13,13 +15,13 @@ public class Forest extends CellularAutomaton
 	public static final int 	MIN_GROW_TREE 		= 2000;
 	public static final int 	ASHES_DISP			= 2000;
 	
-	private static final int 	SPEED 				= 1;
-	private static final int 	BURNING_FACTOR 		= 50; // Lower is the value, faster trees will burn.
-	private static final double DENSITY_TREES 		= 0.70d;
-	private static final double DENSITY_GRASS 		= 0.50d;
-	private static final double PROB_TREE_BORN		= 0.9999d;
-	private static final double PROB_GRASS_BORN		= 0.999d;
-	private static final double PROB_TREE_BURN		= 0.9999d;
+	private static final int 	SPEED 				= (int) Config.getProperty(Constants.SPEED_FOREST);
+	private static final int 	BURNING_FACTOR 		= (int) Config.getProperty(Constants.BURNING_FACTOR);
+	private static final double DENSITY_TREES 		= Config.getProperty(Constants.DENSITY_TREES);
+	private static final double DENSITY_GRASS 		= Config.getProperty(Constants.DENSITY_GRASS);
+	private static final double PROB_TREE_BORN		= Config.getProperty(Constants.PROB_TREE_BORN);
+	private static final double PROB_GRASS_BORN		= Config.getProperty(Constants.PROB_GRASS_BORN);
+	private static final double PROB_TREE_BURN		= Config.getProperty(Constants.PROB_TREE_BURN);
 
 	/* ****************************************************************
 	 * 	Private context

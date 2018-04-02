@@ -7,103 +7,129 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 
+import etu.upmc.project.log.Log;
+
 public class Config {
 
 	/* ****************************************************************
 	 * 	Constants
 	 * ****************************************************************/
-	
+
 	private static final String DIR_PATH 				= "config/";
 	private static final String DEFAULT_CFG_FILE_NAME 	= "default.xml";
 	private static final String CFG_FILE_DESCRIPTION	= "Project - 2i013";
-	
+
 	/* ****************************************************************
 	 * 	Private context
 	 * ****************************************************************/
-	
-	private Properties properties;
-	
-	/* ****************************************************************
-	 * 	Singleton
-	 * ****************************************************************/
-	
+
+	private static Properties properties;
 	private static Config instance;
-	
-	public static Config getInstance()
-	{
-		if (instance == null)
-		{
-			instance = new Config();
-		}
-		
-		return instance;
-	}
-	
+	private static boolean loaded;
+
 	/* ****************************************************************
 	 * 	Constructor
 	 * ****************************************************************/
-	
-	private Config() {
-		this.properties = new Properties();
+
+	private Config() 
+	{
+		properties = new Properties();
+		loaded = false;
 	}
-	
+
+	/* ****************************************************************
+	 * 	Public methods
+	 * ****************************************************************/
+
+	public static double getProperty(Constants constant)
+	{
+		checkInstance();
+		double returnValue = -1;
+
+		if (!loaded)
+		{
+			Log.error("Configuration file not loaded.");
+		}
+		else 
+		{
+			try 
+			{
+				returnValue = Double.parseDouble(properties.getProperty(constant.name()));
+			}
+			catch (NullPointerException e)
+			{
+				Log.warning("Value \"" + constant.name() + "\" not found in configuration file.");
+			}
+		}
+
+		return returnValue;
+	}
+
+
 	/**
 	 * Load configuration file.
 	 * 
 	 * @param filename
 	 * 		The relative path from the project root directory.
 	 */
-	public void loadConfig(String filename)
+	public static void loadConfig(String filename)
 	{
-		try {
-			FileInputStream fis = new FileInputStream(filename);
-			this.properties.loadFromXML(fis);
-			
-			for (Constants constant : Constants.values())
-			{
-				constant.setValue(this.properties.getProperty(constant.name(), constant.getValue()));
-			}
-			
-			fis.close();
-		} 
-		catch (IOException e) 
+		checkInstance();
+
+		if (loaded)
 		{
-			e.printStackTrace();
-			System.err.println("Fatal : cannot load default configuration file. Exit...");
-			System.exit(-1);
+			Log.warning("Configuration already loaded.");
+		}
+		else
+		{
+			try {
+				FileInputStream fis = new FileInputStream(filename);
+				properties.loadFromXML(fis);
+				fis.close();
+				loaded = true;
+				Log.info("Configuration file successfully loaded.");
+			} 
+			catch (IOException e) 
+			{
+				e.printStackTrace();
+				Log.fatal("Cannot load default configuration file.");
+				System.exit(-1);
+			}
 		}
 	}
-	
+
 	/**
 	 * Load the default configuration file.
 	 */
-	public void loadConfig()
+	public static void loadConfig()
 	{
-		this.loadConfig(DIR_PATH + DEFAULT_CFG_FILE_NAME);
+		loadConfig(DIR_PATH + DEFAULT_CFG_FILE_NAME);
 	}
-	
+
 	/**
 	 * Save the configuration file as XML under project directory.
 	 * 
 	 * @param properties
 	 * 			The configuration to store.
 	 * @param filename
-	 * 			The relative path to the file.
+	 * 			The name of the file. It will be saved under config/ directory.
 	 * 
 	 * @see Properties 
 	 */
-	public void saveConfig(Properties properties, String filename)
+	public static void saveConfig(Properties properties, String filename)
 	{
+		checkInstance();
 		try {
-			FileOutputStream fos = new FileOutputStream(filename);
+			FileOutputStream fos = new FileOutputStream(DIR_PATH + filename);
 			properties.storeToXML(fos, CFG_FILE_DESCRIPTION);
+			Log.info("Succesfully wrote configuration file.");
 		} catch (IOException e) {
 			e.printStackTrace();
-			System.err.println("Error : unable to write file \"" + filename + "\".");
+			Log.error("Unable to write file \"" + filename + "\".");
 		}
 	}
-	
-	
+
+
 	/**
 	 * Save the configuration file as XML. The file will be stored in the default config directory 
 	 * with the current timestamp as filename.
@@ -112,10 +138,23 @@ public class Config {
 	 * 			The configutation to store.
 	 * 
 	 * @see Properties
-	 */
-	public void saveConfig(Properties properties)
+	0 */
+	public static void saveConfig(Properties properties)
 	{
 		String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-		this.saveConfig(properties, DIR_PATH + timeStamp + ".xml");
+		saveConfig(properties, DIR_PATH + timeStamp + ".xml");
 	}
+
+	/* ****************************************************************
+	 * 	Private methods
+	 * ****************************************************************/
+
+	private static void checkInstance()
+	{
+		if (instance == null)
+		{
+			instance = new Config();
+		}
+	}
+
 }

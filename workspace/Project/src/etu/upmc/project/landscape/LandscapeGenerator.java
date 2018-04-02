@@ -1,5 +1,8 @@
 package etu.upmc.project.landscape;
 
+import etu.upmc.project.config.Config;
+import etu.upmc.project.config.Constants;
+
 public class LandscapeGenerator {
 
 	/* ****************************************************************
@@ -11,13 +14,12 @@ public class LandscapeGenerator {
 	public static final int ENVIRONMENT_FOREST		= 1 << 2;
 	public static final int ENVIRONMENT_VOLCANO		= 1 << 3;
 	
-	public static final double WATER_ALTITUDE 		= 0.1;
-	
-	private static final double SCALING 			= 1.0;
-	private static final double ALTITUDE_RATIO 		= 0.3;
-	private static final double FOREST_ALTITUDE 	= 0.6;
-	private static final int 	NB_MAX_VOLCANO		= 2;
-	private static final double FEATURE_SIZE 		= 64;
+	private static final double SCALING 			= Config.getProperty(Constants.SCALING);
+	private static final double ALTITUDE_RATIO 		= Config.getProperty(Constants.ALTITUDE_RATIO);
+	private static final double FEATURE_SIZE 		= Config.getProperty(Constants.FEATURE_SIZE);
+	private static final double FOREST_ALTITUDE 	= Config.getProperty(Constants.FOREST_ALTITUDE);
+	public 	static final double WATER_ALTITUDE 		= Config.getProperty(Constants.WATER_ALTITUDE);
+	private static final int 	NB_MAX_VOLCANO		= (int) Config.getProperty(Constants.NB_MAX_VOLCANO);
 
 	public static int[][] generateLandscape(int width, int height, double[][] elevation)
 	{

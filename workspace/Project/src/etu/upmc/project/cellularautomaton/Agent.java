@@ -1,5 +1,7 @@
 package etu.upmc.project.cellularautomaton;
 
+import etu.upmc.project.config.Config;
+import etu.upmc.project.config.Constants;
 import etu.upmc.project.tools.Tools;
 
 public class Agent extends CellularAutomaton 
@@ -9,17 +11,17 @@ public class Agent extends CellularAutomaton
 	 * 	Constants
 	 * ****************************************************************/
 
-	private static final int 		SPEED 					= 10;
-	private static final double 	DENSITY 				= 0.10;
-	private static final double 	PROB_PREY_FLEE 			= 0.95;
-	private static final double 	PROB_PREDATOR_HUNT 		= 0.75;
-	private static final double 	PROB_AGENT_MOVE 		= 0.20;
-	private static final double 	PREY_NATALITY_RATE      = 0.05;
-	private static final double     PREDATOR_NATALITY_RATE  = 0.01;
-	private static final int	 	PREY_HUNGER_LIMIT 		= 1000;
-	private static final int 		PREDATOR_HUNGER_LIMIT 	= 1000;
-	private static final int 		PREY_GROWING_TIME 		= 10;
-	private static final int 		PREDATOR_GROWING_TIME	= 10;
+	private static final int 		SPEED 					= (int) Config.getProperty(Constants.SPEED_AGENTS);
+	private static final double 	DENSITY 				= Config.getProperty(Constants.DENSITY_AGENTS);
+	private static final double 	PROB_PREY_FLEE 			= Config.getProperty(Constants.PROB_PREY_FLEE);
+	private static final double 	PROB_PREDATOR_HUNT 		= Config.getProperty(Constants.PROB_PREDATOR_HUNT);
+	private static final double 	PROB_AGENT_MOVE 		= Config.getProperty(Constants.PROB_AGENT_MOVE);
+	private static final double 	PREY_NATALITY_RATE      = Config.getProperty(Constants.PREY_NATALITY_RATE);
+	private static final double     PREDATOR_NATALITY_RATE  = Config.getProperty(Constants.PREDATOR_NATALITY_RATE);
+	private static final int	 	PREY_HUNGER_LIMIT 		= (int) Config.getProperty(Constants.PREY_HUNGER_LIMIT);
+	private static final int 		PREDATOR_HUNGER_LIMIT 	= (int) Config.getProperty(Constants.PREDATOR_HUNGER_LIMIT);
+	private static final int 		PREY_GROWING_TIME 		= (int) Config.getProperty(Constants.PREY_GROWING_TIME);
+	private static final int 		PREDATOR_GROWING_TIME	= (int) Config.getProperty(Constants.PREDATOR_GROWING_TIME);
 
 
 	/* ****************************************************************
