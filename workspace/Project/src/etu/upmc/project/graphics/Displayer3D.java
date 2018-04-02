@@ -35,18 +35,20 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 	/* ****************************************************************
 	 * 	Constants
 	 * ****************************************************************/
-	
+
 	public static final float HEIGHT_FACTOR = 32f;
 
 	/* ****************************************************************
 	 * 	Private context
 	 * ****************************************************************/
-	
+
 	private int width, height;
 	/* Data from automaton */
-	private int[][] cellsStates, informations, environment;
+	private int[][] cellsStates, environment;
+	private int [][][] informations;
 	private double[][] elevation;	
 	private double maxEverHeightValue, minEverHeightValue;
+	private Object lock;
 	/* Data to perform graphical display */
 	private Frame frame;
 	private float rotateX, rotateY, rotateZ;
@@ -55,17 +57,18 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 	private boolean isDebugMode;
 	/* FPS */
 	private int it, lastItStamp;
-    private long lastTimeStamp;
+	private long lastTimeStamp;
 
 	/* ****************************************************************
 	 * 	Private methods
 	 * ****************************************************************/
-	
+
 	private void init()
 	{
 		this.colors = new float[this.width][this.height][4];
 		this.cellsStates = new int[this.width][this.height];
-		this.informations = new int[this.width][this.height];
+		this.informations = new int[this.width][this.height][3];
+		this.lock = new Object();
 		this.rotateX = 0.0f;
 		this.rotateY = 0.0f;
 		this.rotateZ = -90.0f;
@@ -100,7 +103,7 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 		GLCanvas canvas = new GLCanvas(glCaps);
 		Animator animator = new Animator(canvas);
 		this.frame = new Frame("Project");
-		
+
 		glCaps.setDoubleBuffered(true);
 		canvas.addGLEventListener(this);
 		canvas.addKeyListener(this);
@@ -120,7 +123,7 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 		animator.start();
 		canvas.requestFocus();
 	}
-	
+
 	/* ****************************************************************
 	 * 	Events
 	 * ****************************************************************/
@@ -146,10 +149,17 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 		}
 		else if (arg instanceof EventUpdate)
 		{
-			for (int i = 0; i < this.cellsStates.length; i++)
-			{
-				this.cellsStates[i] = ((EventUpdate) arg).getBuffer()[i].clone();
-				this.informations[i] = ((EventUpdate) arg).getInformations()[i].clone();
+			synchronized (this.lock) {
+				for (int i = 0; i < this.cellsStates.length; i++)
+				{
+					this.cellsStates[i] = ((EventUpdate) arg).getBuffer()[i].clone();
+//					System.arraycopy(this.cellsStates[i], 0, ((EventUpdate) arg).getBuffer()[i], 0, this.cellsStates[i].length);
+					for (int j = 0; j < this.informations[i].length; j++)
+					{
+						this.informations[i][j] = ((EventUpdate) arg).getInformations()[i][j].clone();
+//						System.arraycopy(this.informations[i][j], 0, ((EventUpdate) arg).getInformations()[i][j], 0, this.informations[i][j].length);
+					}
+				}
 			}
 		}
 	}
@@ -158,7 +168,7 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 	/* ****************************************************************
 	 * 	OpenGL - Graphic render
 	 * ****************************************************************/
-	
+
 	@Override
 	public void init(GLAutoDrawable glDrawable) {
 		GL2 gl = glDrawable.getGL().getGL2();
@@ -192,9 +202,9 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 			this.lastTimeStamp = System.currentTimeMillis();
 			this.frame.setTitle("Project ~ " + fps + " FPS");
 		}
-		
+
 		this.it++;
-		
+
 		GL2 gl = gLDrawable.getGL().getGL2();
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT);
 		gl.glClear(GL.GL_DEPTH_BUFFER_BIT);
@@ -212,84 +222,86 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 			gl.glRotatef(this.rotateZ, 1, 0, 0);
 		}
 
-		// ** draw everything
-		gl.glBegin(GL2.GL_QUADS);                
+		synchronized (this.lock) {
 
-		for (int x = 0 ; x < this.width; x++)
-		{
-			for (int y = 0 ; y < this.height; y++)
+			// ** draw everything
+			gl.glBegin(GL2.GL_QUADS);                
+
+			for (int x = 0 ; x < this.width; x++)
 			{
-				switch (this.environment[x][y])
+				for (int y = 0 ; y < this.height; y++)
 				{
-				case LandscapeGenerator.ENVIRONMENT_WATER:
-					this.colors[x][y][0] = 0;
-					this.colors[x][y][1] = 0;
-					this.colors[x][y][2] = 0xFF;
-					this.colors[x][y][3] = Tools.map((float) -this.elevation[x][y], (float) LandscapeGenerator.WATER_ALTITUDE, (float) -this.minEverHeightValue, 1, 0.25f);
-					break;
-				case LandscapeGenerator.ENVIRONMENT_SAND:
-					this.colors[x][y][0] = 0xEF;
-					this.colors[x][y][1] = 0xDD;
-					this.colors[x][y][2] = 0x6F;
-					this.colors[x][y][3] = 0xFF;
-					break;
-				case LandscapeGenerator.ENVIRONMENT_VOLCANO:
-//					this.colors[x][y][0] = 0xFF;
-//					this.colors[x][y][1] = 0x00;
-//					this.colors[x][y][2] = 0x00;
-//					this.colors[x][y][3] = 0xFF;
-//					break;
-				default:
-					this.colors[x][y][0] = (float) (this.elevation[x][y] / this.maxEverHeightValue);
-					this.colors[x][y][1] = (float) (0.9f + 0.1f * this.elevation[x][y] / this.maxEverHeightValue);
-					this.colors[x][y][2] = (float) (this.elevation[x][y] / this.maxEverHeightValue);
-					this.colors[x][y][3] = 0xFF;
-					break;
-				}
-				
-				if (CellularAutomaton.isInStates(this.cellsStates[x][y], CellularAutomaton.FOREST_GRASS))
-				{
-					this.colors[x][y][0] = 0;
-					this.colors[x][y][1] = 0xFF;
-					this.colors[x][y][2] = 0;
-				}
-
-				if (CellularAutomaton.isInStates(this.cellsStates[x][y], CellularAutomaton.FOREST_TREE, CellularAutomaton.FOREST_TREE_BURNING, CellularAutomaton.FOREST_ASHES))
-				{
-					Tree.displayObjectAt(gl, this.cellsStates[x][y], x - this.width / 2, y - this.height / 2, (float) this.elevation[x][y], this.informations[x][y]);
-				}
-				else if (CellularAutomaton.isInStates(this.cellsStates[x][y], CellularAutomaton.AGENT_PREY, CellularAutomaton.AGENT_PREDATOR, CellularAutomaton.AGENT_PREY_FLEEING, 
-								CellularAutomaton.AGENT_PREDATOR_HUNTING, CellularAutomaton.AGENT_PREY_YOUNGLING, CellularAutomaton.AGENT_PREDATOR_YOUNGLING))
-				{
-					Agent.displayObjectAt(gl, this.cellsStates[x][y], x - this.width / 2, y - this.height / 2, (float) this.elevation[x][y]);
-				}
-
-				gl.glColor4f(this.colors[x][y][0], this.colors[x][y][1], this.colors[x][y][2], this.colors[x][y][3]);
-
-				for ( int i = 0 ; i < 4 ; i++ )
-				{
-					int xIt = Math.min((i==1 || i == 2 ? 1 : 0) + x, this.width - 1);
-					int yIt = Math.min((i==0 || i == 1 ? 1 : 0) + y, this.height - 1);
-					float xSign = i == 1 || i == 2 ? 1 : -1;
-					float ySign = i == 0 || i == 1 ? 1 : -1;
-
-					float zValue = 0.f;
-
-					if (!isDebugMode)
+					switch (this.environment[x][y])
 					{
-						double altitude = elevation[xIt][yIt] * HEIGHT_FACTOR;
-						if (altitude <= LandscapeGenerator.WATER_ALTITUDE) 
-							zValue = 0;
-						else
-							zValue = (float) (altitude);
+					case LandscapeGenerator.ENVIRONMENT_WATER:
+						this.colors[x][y][0] = 0;
+						this.colors[x][y][1] = 0;
+						this.colors[x][y][2] = 0xFF;
+						this.colors[x][y][3] = Tools.map((float) -this.elevation[x][y], (float) LandscapeGenerator.WATER_ALTITUDE, (float) -this.minEverHeightValue, 1, 0.25f);
+						break;
+					case LandscapeGenerator.ENVIRONMENT_SAND:
+						this.colors[x][y][0] = 0xEF;
+						this.colors[x][y][1] = 0xDD;
+						this.colors[x][y][2] = 0x6F;
+						this.colors[x][y][3] = 0xFF;
+						break;
+					case LandscapeGenerator.ENVIRONMENT_VOLCANO:
+						//					this.colors[x][y][0] = 0xFF;
+						//					this.colors[x][y][1] = 0x00;
+						//					this.colors[x][y][2] = 0x00;
+						//					this.colors[x][y][3] = 0xFF;
+						//					break;
+					default:
+						this.colors[x][y][0] = (float) (this.elevation[x][y] / this.maxEverHeightValue);
+						this.colors[x][y][1] = (float) (0.9f + 0.1f * this.elevation[x][y] / this.maxEverHeightValue);
+						this.colors[x][y][2] = (float) (this.elevation[x][y] / this.maxEverHeightValue);
+						this.colors[x][y][3] = 0xFF;
+						break;
 					}
 
-					gl.glVertex3f(x + xSign - this.width / 2, y + ySign - this.height / 2, zValue);
+					if (CellularAutomaton.isInStates(this.cellsStates[x][y], CellularAutomaton.FOREST_GRASS))
+					{
+						this.colors[x][y][0] = 0;
+						this.colors[x][y][1] = 0xFF;
+						this.colors[x][y][2] = 0;
+					}
+
+					if (CellularAutomaton.isInStates(this.cellsStates[x][y], CellularAutomaton.FOREST_TREE, CellularAutomaton.FOREST_TREE_BURNING, CellularAutomaton.FOREST_ASHES))
+					{
+						Tree.displayObjectAt(gl, this.cellsStates[x][y], x - this.width / 2, y - this.height / 2, (float) this.elevation[x][y], this.informations[x][y][0]);
+					}
+					else if (CellularAutomaton.isInStates(this.cellsStates[x][y], CellularAutomaton.AGENT_PREY, CellularAutomaton.AGENT_PREDATOR, CellularAutomaton.AGENT_PREY_FLEEING, 
+							CellularAutomaton.AGENT_PREDATOR_HUNTING, CellularAutomaton.AGENT_PREY_YOUNGLING, CellularAutomaton.AGENT_PREDATOR_YOUNGLING))
+					{
+						Agent.displayObjectAt(gl, this.cellsStates[x][y], x - this.width / 2, y - this.height / 2, (float) this.elevation[x][y]);
+					}
+
+					gl.glColor4f(this.colors[x][y][0], this.colors[x][y][1], this.colors[x][y][2], this.colors[x][y][3]);
+
+					for ( int i = 0 ; i < 4 ; i++ )
+					{
+						int xIt = Math.min((i==1 || i == 2 ? 1 : 0) + x, this.width - 1);
+						int yIt = Math.min((i==0 || i == 1 ? 1 : 0) + y, this.height - 1);
+						float xSign = i == 1 || i == 2 ? 1 : -1;
+						float ySign = i == 0 || i == 1 ? 1 : -1;
+
+						float zValue = 0.f;
+
+						if (!isDebugMode)
+						{
+							double altitude = elevation[xIt][yIt] * HEIGHT_FACTOR;
+							if (altitude <= LandscapeGenerator.WATER_ALTITUDE) 
+								zValue = 0;
+							else
+								zValue = (float) (altitude);
+						}
+
+						gl.glVertex3f(x + xSign - this.width / 2, y + ySign - this.height / 2, zValue);
+					}
 				}
 			}
+			gl.glEnd();
 		}
-
-		gl.glEnd();      		
 	}
 
 	@Override

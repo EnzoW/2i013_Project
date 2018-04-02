@@ -11,5 +11,5 @@ public interface EventUpdate extends Event {
 
 	public int[][] getBuffer();
 
-	public int[][] getInformations();
+	public int[][][] getInformations();
 }

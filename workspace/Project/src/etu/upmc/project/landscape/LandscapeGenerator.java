@@ -70,7 +70,7 @@ public class LandscapeGenerator {
 								}
 							}
 						}
-					}//cas spéciaux des quatres bords :
+					} //cas speciaux des quatres bords :
 					else if(x >= 5 && y >= 5 && x+5 >= width && y+5 < height) //au bord est : x+5>=width
 					{
 						for(int a = x-5; a < x;a++)

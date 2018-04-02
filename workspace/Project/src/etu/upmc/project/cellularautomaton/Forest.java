@@ -31,9 +31,9 @@ public class Forest extends CellularAutomaton
 	 * 	Constructor
 	 * ****************************************************************/
 
-	public Forest(int width, int height, int[][] buffer, int[][] informations, double[][] elevation, int[][] landscape) 
+	public Forest(int width, int height, int[][] buffer, int[][][] informations, double[][] elevation, boolean[][] updated, int[][] landscape) 
 	{
-		super(width, height, buffer, informations, elevation, SPEED);
+		super(width, height, buffer, informations, elevation, updated, SPEED);
 		this.landscape = landscape;
 	}
 
@@ -53,12 +53,12 @@ public class Forest extends CellularAutomaton
 					if (DENSITY_TREES >= Math.random())
 					{
 						this.setStates(x, y, CellularAutomaton.FOREST_TREE);
-						this.informations[x][y] = (int) (Math.random() * (MAX_GROW_TREE - MIN_GROW_TREE) + MIN_GROW_TREE);
+						this.informations[x][y][0] = (int) (Math.random() * (MAX_GROW_TREE - MIN_GROW_TREE) + MIN_GROW_TREE);
 					}
 					if (DENSITY_GRASS >= Math.random()) 
 					{
 						this.setStates(x, y, CellularAutomaton.FOREST_GRASS);
-						this.informations[x][y] = 0;
+						this.informations[x][y][0] = 0;
 					}
 				}
 			}
@@ -73,13 +73,13 @@ public class Forest extends CellularAutomaton
 			if (this.landscape[x][y] == LandscapeGenerator.ENVIRONMENT_FOREST && Math.random() > PROB_TREE_BORN)
 			{
 				this.setStates(x, y, CellularAutomaton.FOREST_TREE);
-				this.informations[x][y] = 0;
+				this.informations[x][y][0] = 0;
 			}
 			
 			if (this.landscape[x][y] == LandscapeGenerator.ENVIRONMENT_FOREST && Math.random() > PROB_GRASS_BORN)
 			{
 				this.setStates(x, y, CellularAutomaton.FOREST_GRASS);
-				this.informations[x][y] = 0;
+				this.informations[x][y][0] = 0;
 			}
 		}
 		else if (this.isOnlyInState(x, y, CellularAutomaton.FOREST_TREE))
@@ -88,18 +88,18 @@ public class Forest extends CellularAutomaton
 			{
 				this.setStates(x, y, CellularAutomaton.FOREST_TREE_BURNING);
 			}
-			if (this.informations[x][y] < MAX_GROW_TREE)
+			if (this.informations[x][y][0] < MAX_GROW_TREE)
 			{
-				this.informations[x][y]++;
+				this.informations[x][y][0]++;
 			}
 		}
 		else if (this.isOnlyInState(x, y, CellularAutomaton.FOREST_TREE_BURNING))
 		{
-			this.informations[x][y] -= this.informations[x][y] / BURNING_FACTOR;
-			if (this.informations[x][y] / BURNING_FACTOR == 0)
+			this.informations[x][y][0] -= this.informations[x][y][0] / BURNING_FACTOR;
+			if (this.informations[x][y][0] / BURNING_FACTOR == 0)
 			{
 				this.setStates(x, y, CellularAutomaton.FOREST_ASHES);
-				this.informations[x][y] = 0;
+				this.informations[x][y][0] = 0;
 			}
 			else
 			{
@@ -108,9 +108,9 @@ public class Forest extends CellularAutomaton
 		}
 		else if (this.isOnlyInState(x, y, CellularAutomaton.FOREST_ASHES))
 		{
-			this.informations[x][y]++;
+			this.informations[x][y][0]++;
 		
-			if (this.informations[x][y] == ASHES_DISP)
+			if (this.informations[x][y][0] == ASHES_DISP)
 			{
 				this.setStates(x, y, CellularAutomaton.EMPTY);
 			}

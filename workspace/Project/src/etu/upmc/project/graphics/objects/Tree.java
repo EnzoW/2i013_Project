@@ -10,7 +10,9 @@ import etu.upmc.project.tools.Tools;
 public class Tree {
 
 	private static final float TREE_SIZE = 0.25f;
-	
+	private static final boolean TREES = true;
+
+
 	public static void displayObjectAt(GL2 gl, int cellState, float x, float y, float height, float information)
 	{
 		float treeHeight = 0;
@@ -32,14 +34,29 @@ public class Tree {
 			treeHeight = 1;			
 		}
 
-		gl.glVertex3f(x, y, height * Displayer3D.HEIGHT_FACTOR);
-		gl.glVertex3f(x, y + TREE_SIZE, height * Displayer3D.HEIGHT_FACTOR + treeHeight);
-		gl.glVertex3f(x, y, height * Displayer3D.HEIGHT_FACTOR );
-		gl.glVertex3f(x, y - TREE_SIZE, height * Displayer3D.HEIGHT_FACTOR + treeHeight);
+		if (TREES)
+		{
+			gl.glVertex3f(x, y + TREE_SIZE, height * Displayer3D.HEIGHT_FACTOR + treeHeight);
+			gl.glVertex3f(x, y, height * Displayer3D.HEIGHT_FACTOR);
+			gl.glVertex3f(x, y - TREE_SIZE, height * Displayer3D.HEIGHT_FACTOR + treeHeight);
+			gl.glVertex3f(x, y, height * Displayer3D.HEIGHT_FACTOR );
 
-		gl.glVertex3f(x, y, height * Displayer3D.HEIGHT_FACTOR );
-		gl.glVertex3f(x - TREE_SIZE, y, height * Displayer3D.HEIGHT_FACTOR + treeHeight);
-		gl.glVertex3f(x, y, height * Displayer3D.HEIGHT_FACTOR );
-		gl.glVertex3f(x + TREE_SIZE, y, height * Displayer3D.HEIGHT_FACTOR + treeHeight);
+			gl.glVertex3f(x - TREE_SIZE, y, height * Displayer3D.HEIGHT_FACTOR + treeHeight);
+			gl.glVertex3f(x, y, height * Displayer3D.HEIGHT_FACTOR );
+			gl.glVertex3f(x + TREE_SIZE, y, height * Displayer3D.HEIGHT_FACTOR + treeHeight);
+			gl.glVertex3f(x, y, height * Displayer3D.HEIGHT_FACTOR );
+		}
+		else
+		{
+			gl.glVertex3f(x, y, height * Displayer3D.HEIGHT_FACTOR);
+			gl.glVertex3f(x, y + TREE_SIZE, height * Displayer3D.HEIGHT_FACTOR + treeHeight);
+			gl.glVertex3f(x, y, height * Displayer3D.HEIGHT_FACTOR );
+			gl.glVertex3f(x, y - TREE_SIZE, height * Displayer3D.HEIGHT_FACTOR + treeHeight);
+
+			gl.glVertex3f(x, y, height * Displayer3D.HEIGHT_FACTOR );
+			gl.glVertex3f(x - TREE_SIZE, y, height * Displayer3D.HEIGHT_FACTOR + treeHeight);
+			gl.glVertex3f(x, y, height * Displayer3D.HEIGHT_FACTOR );
+			gl.glVertex3f(x + TREE_SIZE, y, height * Displayer3D.HEIGHT_FACTOR + treeHeight);
+		}
 	}
 }

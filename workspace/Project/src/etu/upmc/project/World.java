@@ -6,6 +6,7 @@ import java.util.Observable;
 import etu.upmc.project.cellularautomaton.Agent;
 import etu.upmc.project.cellularautomaton.CellularAutomaton;
 import etu.upmc.project.cellularautomaton.Forest;
+import etu.upmc.project.cellularautomaton.Human;
 import etu.upmc.project.events.EventInit;
 import etu.upmc.project.events.EventUpdate;
 import etu.upmc.project.landscape.LandscapeGenerator;
@@ -28,8 +29,8 @@ public class World extends Observable
 	private int randomX[];
 	private int randomY[];
 	private int[][] buffer;
-	private int[][] informations;
-	private boolean[][] agentsUpdated;
+	private int[][][] informations;
+	private boolean[][] updated;
 	private double[][] elevation;
 	private int[][] landscape;
 	private ArrayList<CellularAutomaton> automatons;
@@ -53,15 +54,15 @@ public class World extends Observable
 		this.randomX = new int[width];
 		this.randomY = new int[height];
 		this.buffer = new int[width][height];
-		this.informations = new int[width][height];
+		this.informations = new int[width][height][3];
 		this.elevation = new double[width][height];
-		this.agentsUpdated = new boolean[width][height];
+		this.updated = new boolean[width][height];
 		this.automatons = new ArrayList<>();
 
 		this.landscape = LandscapeGenerator.generateLandscape(this.width, this.height, this.elevation);
-		
-		this.automatons.add(new Agent(width, height, this.buffer, this.informations, this.elevation, this.agentsUpdated));
-		this.automatons.add(new Forest(width, height, this.buffer, this.informations, this.elevation, this.landscape));
+		this.automatons.add(new Agent(width, height, this.buffer, this.informations, this.elevation, this.updated));
+		this.automatons.add(new Forest(width, height, this.buffer, this.informations, this.elevation, this.updated, this.landscape));
+//		this.automatons.add(new Human(width, height, this.buffer, this.informations, this.elevation, this.updated));
 
 		for (int x = 0; x < this.width; x++)
 		{
@@ -69,9 +70,7 @@ public class World extends Observable
 			for (int y = 0; y < this.height; y++)
 			{
 				this.buffer[x][y] = CellularAutomaton.EMPTY;
-				this.informations[x][y] = 0;
 				this.randomY[y] = y;
-				this.agentsUpdated[x][y] = false;
 			}
 		}
 
@@ -117,7 +116,7 @@ public class World extends Observable
 			}
 
 			@Override
-			public int[][] getInformations() {
+			public int[][][] getInformations() {
 				return World.this.informations;
 			}
 
@@ -166,7 +165,7 @@ public class World extends Observable
 			{
 				for (int y = 0; y < this.height; y++)
 				{
-					this.agentsUpdated[x][y] = false;
+					this.updated[x][y] = false;
 				}
 			}
 			

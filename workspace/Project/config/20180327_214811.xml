@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+<comment>Project - 2i013</comment>
+<entry key="java.runtime.name">Java(TM) SE Runtime Environment</entry>
+<entry key="sun.boot.library.path">C:\Program Files\Java\jre1.8.0_161\bin</entry>
+<entry key="java.vm.version">25.161-b12</entry>
+<entry key="java.vm.vendor">Oracle Corporation</entry>
+<entry key="java.vendor.url">http://java.oracle.com/</entry>
+<entry key="path.separator">;</entry>
+<entry key="java.vm.name">Java HotSpot(TM) 64-Bit Server VM</entry>
+<entry key="file.encoding.pkg">sun.io</entry>
+<entry key="user.country">FR</entry>
+<entry key="user.script"/>
+<entry key="sun.java.launcher">SUN_STANDARD</entry>
+<entry key="sun.os.patch.level"/>
+<entry key="java.vm.specification.name">Java Virtual Machine Specification</entry>
+<entry key="user.dir">D:\Documents\UPMC\S4\2I013\Project\workspace\Project</entry>
+<entry key="java.runtime.version">1.8.0_161-b12</entry>
+<entry key="java.awt.graphicsenv">sun.awt.Win32GraphicsEnvironment</entry>
+<entry key="java.endorsed.dirs">C:\Program Files\Java\jre1.8.0_161\lib\endorsed</entry>
+<entry key="os.arch">amd64</entry>
+<entry key="java.io.tmpdir">C:\Users\enzow\AppData\Local\Temp\</entry>
+<entry key="line.separator">&#13;
+</entry>
+<entry key="java.vm.specification.vendor">Oracle Corporation</entry>
+<entry key="user.variant"/>
+<entry key="os.name">Windows 10</entry>
+<entry key="sun.jnu.encoding">Cp1252</entry>
+<entry key="java.library.path">C:\Program Files\Java\jre1.8.0_161\bin;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;C:/Program Files/Java/jre1.8.0_161/bin/server;C:/Program Files/Java/jre1.8.0_161/bin;C:/Program Files/Java/jre1.8.0_161/lib/amd64;C:\ProgramData\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files\Condusiv Technologies\ExpressCache\;C:\Users\enzow\AppData\Local\Microsoft\WindowsApps;C:\Program Files\Microsoft VS Code\bin;%DASHLANE_DLL_DIR%;C:\Windows\system32;;.</entry>
+<entry key="java.specification.name">Java Platform API Specification</entry>
+<entry key="java.class.version">52.0</entry>
+<entry key="sun.management.compiler">HotSpot 64-Bit Tiered Compilers</entry>
+<entry key="os.version">10.0</entry>
+<entry key="user.home">C:\Users\enzow</entry>
+<entry key="user.timezone">Europe/Paris</entry>
+<entry key="java.awt.printerjob">sun.awt.windows.WPrinterJob</entry>
+<entry key="file.encoding">Cp1252</entry>
+<entry key="java.specification.version">1.8</entry>
+<entry key="java.class.path">C:\Program Files\Java\jre1.8.0_161\lib\resources.jar;C:\Program Files\Java\jre1.8.0_161\lib\rt.jar;C:\Program Files\Java\jre1.8.0_161\lib\jsse.jar;C:\Program Files\Java\jre1.8.0_161\lib\jce.jar;C:\Program Files\Java\jre1.8.0_161\lib\charsets.jar;C:\Program Files\Java\jre1.8.0_161\lib\jfr.jar;C:\Program Files\Java\jre1.8.0_161\lib\ext\access-bridge-64.jar;C:\Program Files\Java\jre1.8.0_161\lib\ext\cldrdata.jar;C:\Program Files\Java\jre1.8.0_161\lib\ext\dnsns.jar;C:\Program Files\Java\jre1.8.0_161\lib\ext\jaccess.jar;C:\Program Files\Java\jre1.8.0_161\lib\ext\jfxrt.jar;C:\Program Files\Java\jre1.8.0_161\lib\ext\localedata.jar;C:\Program Files\Java\jre1.8.0_161\lib\ext\nashorn.jar;C:\Program Files\Java\jre1.8.0_161\lib\ext\sunec.jar;C:\Program Files\Java\jre1.8.0_161\lib\ext\sunjce_provider.jar;C:\Program Files\Java\jre1.8.0_161\lib\ext\sunmscapi.jar;C:\Program Files\Java\jre1.8.0_161\lib\ext\sunpkcs11.jar;C:\Program Files\Java\jre1.8.0_161\lib\ext\zipfs.jar;D:\Documents\UPMC\S4\2I013\Project\workspace\Project\bin;D:\Documents\UPMC\S4\2I013\Project\workspace\Project\libs\commons-cli-1.4.jar;D:\Documents\UPMC\S4\2I013\Project\workspace\Project\libs\gluegen-rt.jar;D:\Documents\UPMC\S4\2I013\Project\workspace\Project\libs\jogl-all.jar;D:\Documents\UPMC\S4\2I013\Project\workspace\Project\libs\nativewindow-core.jar;D:\Documents\UPMC\S4\2I013\Project\workspace\Project\libs\newt-core.jar</entry>
+<entry key="user.name">enzow</entry>
+<entry key="java.vm.specification.version">1.8</entry>
+<entry key="sun.java.command">etu.upmc.project.Application</entry>
+<entry key="java.home">C:\Program Files\Java\jre1.8.0_161</entry>
+<entry key="sun.arch.data.model">64</entry>
+<entry key="user.language">fr</entry>
+<entry key="java.specification.vendor">Oracle Corporation</entry>
+<entry key="awt.toolkit">sun.awt.windows.WToolkit</entry>
+<entry key="java.vm.info">mixed mode</entry>
+<entry key="java.version">1.8.0_161</entry>
+<entry key="java.ext.dirs">C:\Program Files\Java\jre1.8.0_161\lib\ext;C:\Windows\Sun\Java\lib\ext</entry>
+<entry key="sun.boot.class.path">C:\Program Files\Java\jre1.8.0_161\lib\resources.jar;C:\Program Files\Java\jre1.8.0_161\lib\rt.jar;C:\Program Files\Java\jre1.8.0_161\lib\sunrsasign.jar;C:\Program Files\Java\jre1.8.0_161\lib\jsse.jar;C:\Program Files\Java\jre1.8.0_161\lib\jce.jar;C:\Program Files\Java\jre1.8.0_161\lib\charsets.jar;C:\Program Files\Java\jre1.8.0_161\lib\jfr.jar;C:\Program Files\Java\jre1.8.0_161\classes</entry>
+<entry key="java.vendor">Oracle Corporation</entry>
+<entry key="file.separator">\</entry>
+<entry key="java.vendor.url.bug">http://bugreport.sun.com/bugreport/</entry>
+<entry key="sun.io.unicode.encoding">UnicodeLittle</entry>
+<entry key="sun.cpu.endian">little</entry>
+<entry key="sun.desktop">windows</entry>
+<entry key="sun.cpu.isalist">amd64</entry>
+</properties>

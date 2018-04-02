@@ -18,6 +18,8 @@ public abstract class CellularAutomaton
 	public static final int AGENT_PREY_YOUNGLING    = 1 << 8;
 	public static final int AGENT_PREDATOR_YOUNGLING= 1 << 9;
 	public static final int GROUND_PREY_TRACKS      = 1 << 10;
+	public static final int HUMAN_SIMPLE			= 1 << 11;
+	public static final int TRIBE_MAIN				= 1 << 12;
 	
 	/* ****************************************************************
 	 * 	Private Context
@@ -26,8 +28,9 @@ public abstract class CellularAutomaton
 	protected int width;
 	protected int height;
 	protected int[][] buffer;
-	protected int[][] informations;
+	protected int[][][] informations;
 	protected double[][] elevation;
+	protected boolean[][] updated;
 	protected int speed;
 	
 	/* ****************************************************************
@@ -49,13 +52,14 @@ public abstract class CellularAutomaton
 	 * @param speed
 	 * 			The execution speed of the automaton. The automaton will be updated all the "speed" iterations.
 	 */
-	public CellularAutomaton(int width, int height, int[][] buffer, int[][] informations, double[][] elevation, int speed) 
+	public CellularAutomaton(int width, int height, int[][] buffer, int[][][] informations, double[][] elevation, boolean[][] updated, int speed) 
 	{
 		this.width = width;
 		this.height = height;
 		this.buffer = buffer;
 		this.informations = informations;
 		this.elevation = elevation;
+		this.updated = updated;
 		this.speed = speed;
 	}
 	

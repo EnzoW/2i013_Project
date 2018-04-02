@@ -39,7 +39,7 @@ public class Displayer2D extends JPanel implements Observer, Runnable
 		this.bufferedImage = new BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_ARGB);
 		JFrame frame = new JFrame(NAME);
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH); 
-//		frame.setSize(width, height);
+		frame.setSize(width, height);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setContentPane(this);
 		frame.setVisible(true);
@@ -98,7 +98,7 @@ public class Displayer2D extends JPanel implements Observer, Runnable
 		else if (arg instanceof EventUpdate)
 		{
 			int[][] buffer = ((EventUpdate) arg).getBuffer();
-			int[][] informations = ((EventUpdate) arg).getInformations();
+			int[][][] informations = ((EventUpdate) arg).getInformations();
 			int[] colorValues = new int[this.width * this.height];
 
 			int i = 0;
@@ -129,7 +129,7 @@ public class Displayer2D extends JPanel implements Observer, Runnable
 					}
 					else if (CellularAutomaton.isInStates(buffer[x][y], CellularAutomaton.FOREST_ASHES))
 					{
-						int gray = (int) Tools.map(informations[x][y], Forest.MIN_GROW_TREE, Forest.ASHES_DISP, 0, 0xFF);
+						int gray = (int) Tools.map(informations[x][y][0], Forest.MIN_GROW_TREE, Forest.ASHES_DISP, 0, 0xFF);
 						value = 0xFF << 24 | gray << 16 | gray << 8 | gray;
 					}
 					else if (CellularAutomaton.isInStates(buffer[x][y], CellularAutomaton.AGENT_PREY))

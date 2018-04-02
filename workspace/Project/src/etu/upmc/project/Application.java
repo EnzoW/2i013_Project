@@ -1,41 +1,19 @@
 package etu.upmc.project;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-
 import etu.upmc.project.graphics.Displayer3D;
 
 public class Application {
 
 	/* ****************************************************************
-	 * 	Constants
-	 * ****************************************************************/
-	private static final String OPT_NO_HMI = "hmi_disable";
-	private static final String OPT_STATS = "stats";
-	
-	/* ****************************************************************
 	 * 	Application Entry Point
 	 * ****************************************************************/
 	
-	public static void main(String[] args) throws ParseException {
+	public static void main(String[] args) { //throws ParseException {
 		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-		Options options = new Options();
-		CommandLineParser parser = new DefaultParser();
-		options.addOption(OPT_NO_HMI, false, "Launch the program without HMI.");
-		options.addOption(OPT_STATS, false, "Enable statistics and create a csv file in stats/ after execution.");
-		CommandLine cmd = parser.parse(options, args);
 		World world = new World(300, 300);
 
-		if (!cmd.hasOption(OPT_NO_HMI))
-		{
-//			Displayer2D displayer2D = new Displayer2D();
-//			world.addObserver(displayer2D);
-			Displayer3D displayer3D = new Displayer3D();
-			world.addObserver(displayer3D);
-		}
+		Displayer3D displayer3D = new Displayer3D();
+		world.addObserver(displayer3D);
 
 		world.init();
 		world.run();
