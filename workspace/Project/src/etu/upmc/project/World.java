@@ -18,7 +18,7 @@ public class World extends Observable
 	 * 	Constants
 	 * ****************************************************************/
 
-	private static final int DELAY 						= 10;
+	private static final int DELAY 						= 1;
 
 	/* ****************************************************************
 	 * 	Private Context
@@ -62,7 +62,7 @@ public class World extends Observable
 		this.landscape = LandscapeGenerator.generateLandscape(this.width, this.height, this.elevation);
 		this.automatons.add(new Agent(width, height, this.buffer, this.informations, this.elevation, this.updated));
 		this.automatons.add(new Forest(width, height, this.buffer, this.informations, this.elevation, this.updated, this.landscape));
-//		this.automatons.add(new Human(width, height, this.buffer, this.informations, this.elevation, this.updated));
+		this.automatons.add(new Human(width, height, this.buffer, this.informations, this.elevation, this.updated));
 
 		for (int x = 0; x < this.width; x++)
 		{

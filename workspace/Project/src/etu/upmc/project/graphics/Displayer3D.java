@@ -26,6 +26,8 @@ import etu.upmc.project.events.Event;
 import etu.upmc.project.events.EventInit;
 import etu.upmc.project.events.EventUpdate;
 import etu.upmc.project.graphics.objects.Agent;
+import etu.upmc.project.graphics.objects.Building;
+import etu.upmc.project.graphics.objects.Human;
 import etu.upmc.project.graphics.objects.Tree;
 import etu.upmc.project.landscape.LandscapeGenerator;
 import etu.upmc.project.log.Log;
@@ -154,11 +156,9 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 				for (int i = 0; i < this.cellsStates.length; i++)
 				{
 					this.cellsStates[i] = ((EventUpdate) arg).getBuffer()[i].clone();
-//					System.arraycopy(this.cellsStates[i], 0, ((EventUpdate) arg).getBuffer()[i], 0, this.cellsStates[i].length);
 					for (int j = 0; j < this.informations[i].length; j++)
 					{
 						this.informations[i][j] = ((EventUpdate) arg).getInformations()[i][j].clone();
-//						System.arraycopy(this.informations[i][j], 0, ((EventUpdate) arg).getInformations()[i][j], 0, this.informations[i][j].length);
 					}
 				}
 			}
@@ -275,6 +275,14 @@ public class Displayer3D implements GLEventListener, KeyListener, Observer {
 							CellularAutomaton.AGENT_PREDATOR_HUNTING, CellularAutomaton.AGENT_PREY_YOUNGLING, CellularAutomaton.AGENT_PREDATOR_YOUNGLING))
 					{
 						Agent.displayObjectAt(gl, this.cellsStates[x][y], x - this.width / 2, y - this.height / 2, (float) this.elevation[x][y]);
+					}
+					else if (CellularAutomaton.isInStates(this.cellsStates[x][y], CellularAutomaton.HUMAN_SIMPLE, CellularAutomaton.TRIBE_MAIN, CellularAutomaton.HUMAN_RETURN))
+					{
+						Human.displayObjectAt(gl, this.cellsStates[x][y], x - this.width / 2, y - this.height / 2, (float) this.elevation[x][y]);
+					}
+					else if (CellularAutomaton.isInStates(this.cellsStates[x][y], CellularAutomaton.BUILDING))
+					{
+						Building.displayObjectAt(gl, this.cellsStates[x][y], x - this.width / 2, y - this.height / 2, (float) this.elevation[x][y]);
 					}
 
 					gl.glColor4f(this.colors[x][y][0], this.colors[x][y][1], this.colors[x][y][2], this.colors[x][y][3]);
