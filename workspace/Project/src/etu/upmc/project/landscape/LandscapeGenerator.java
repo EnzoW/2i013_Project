@@ -1,3 +1,11 @@
+/**
+ * This file is a part of the project "Vie artificielle".
+ * 
+ * @author 	Quentin Serreau | Enzo Wesquy
+ * @date 	2018
+ * 
+**/
+
 package etu.upmc.project.landscape;
 
 import etu.upmc.project.config.Config;
@@ -12,14 +20,12 @@ public class LandscapeGenerator {
 	public static final int ENVIRONMENT_WATER		= 1 << 0;
 	public static final int ENVIRONMENT_SAND		= 1 << 1;
 	public static final int ENVIRONMENT_FOREST		= 1 << 2;
-	public static final int ENVIRONMENT_VOLCANO		= 1 << 3;
 	
 	private static final double SCALING 			= Config.getProperty(Constants.SCALING);
 	private static final double ALTITUDE_RATIO 		= Config.getProperty(Constants.ALTITUDE_RATIO);
 	private static final double FEATURE_SIZE 		= Config.getProperty(Constants.FEATURE_SIZE);
 	private static final double FOREST_ALTITUDE 	= Config.getProperty(Constants.FOREST_ALTITUDE);
 	public 	static final double WATER_ALTITUDE 		= Config.getProperty(Constants.WATER_ALTITUDE);
-	private static final int 	NB_MAX_VOLCANO		= (int) Config.getProperty(Constants.NB_MAX_VOLCANO);
 
 	public static int[][] generateLandscape(int width, int height, double[][] elevation)
 	{
@@ -40,18 +46,10 @@ public class LandscapeGenerator {
 			}
 		}
 
-		int iteratorVolcano = 0;
-		
 		for(int x = 0; x < width; x++)
 		{
 			for(int y = 0; y < height; y++)
 			{
-				if(elevation[x][y] > 0.99 * maxValue && iteratorVolcano < NB_MAX_VOLCANO && Math.random() < 0.2)
-				{
-					buffer[x][y] = ENVIRONMENT_VOLCANO;
-					iteratorVolcano++;
-				}
-
 				if(elevation[x][y] <= WATER_ALTITUDE * minValue) 
 				{
 					buffer[x][y] = ENVIRONMENT_WATER;

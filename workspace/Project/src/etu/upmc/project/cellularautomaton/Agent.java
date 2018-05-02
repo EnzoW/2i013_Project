@@ -1,3 +1,11 @@
+/**
+ * This file is a part of the project "Vie artificielle".
+ * 
+ * @author 	Quentin Serreau | Enzo Wesquy
+ * @date 	2018
+ * 
+**/
+
 package etu.upmc.project.cellularautomaton;
 
 import etu.upmc.project.config.Config;
@@ -48,12 +56,12 @@ public class Agent extends CellularAutomaton
 				{
 					if (Math.random() < 0.5d)
 					{
-						this.addStates(x, y, AGENT_PREDATOR);
+						this.addState(x, y, AGENT_PREDATOR);
 						this.informations[x][y][0] = (int) (Math.random() * PREDATOR_HUNGER_LIMIT);
 					}
 					else
 					{
-						this.addStates(x, y, AGENT_PREY);
+						this.addState(x, y, AGENT_PREY);
 						this.informations[x][y][0] = (int) (Math.random() * PREY_HUNGER_LIMIT);
 					}
 				}
@@ -243,7 +251,7 @@ public class Agent extends CellularAutomaton
 			throw new IllegalArgumentException(Agent.class.getSimpleName() + " : Cannot add agent to a non-empty position.");
 		}
 
-		this.addStates(x, y, type);
+		this.addState(x, y, type);
 		this.informations[x][y][0] = 0;
 		this.updated[x][y] = true;
 	}
@@ -267,7 +275,7 @@ public class Agent extends CellularAutomaton
 		this.removeStates(x, y, type);
 		this.informations[newX][newY][0] = this.informations[x][y][0];
 		this.informations[x][y][0] = 0;
-		this.addStates(newX, newY, type);
+		this.addState(newX, newY, type);
 		this.updated[newX][newY] = true;
 	}
 

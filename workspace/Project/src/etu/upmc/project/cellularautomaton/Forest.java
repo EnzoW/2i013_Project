@@ -1,8 +1,18 @@
+/**
+ * This file is a part of the project "Vie artificielle".
+ * 
+ * @author 	Quentin Serreau | Enzo Wesquy
+ * @date 	2018
+ * 
+**/
+
 package etu.upmc.project.cellularautomaton;
 
 import etu.upmc.project.config.Config;
 import etu.upmc.project.config.Constants;
 import etu.upmc.project.landscape.LandscapeGenerator;
+import etu.upmc.project.time.Time;
+import etu.upmc.project.tools.Tools;
 
 public class Forest extends CellularAutomaton
 {
@@ -11,24 +21,27 @@ public class Forest extends CellularAutomaton
 	 * 	Constants
 	 * ****************************************************************/
 
-	public static final int 	MAX_GROW_TREE 		= 100000;
-	public static final int 	MIN_GROW_TREE 		= 2000;
-	public static final int 	ASHES_DISP			= 2000;
-	
-	private static final int 	SPEED 				= (int) Config.getProperty(Constants.SPEED_FOREST);
-	private static final int 	BURNING_FACTOR 		= (int) Config.getProperty(Constants.BURNING_FACTOR);
-	private static final double DENSITY_TREES 		= Config.getProperty(Constants.DENSITY_TREES);
-	private static final double DENSITY_GRASS 		= Config.getProperty(Constants.DENSITY_GRASS);
-	private static final double PROB_TREE_BORN		= Config.getProperty(Constants.PROB_TREE_BORN);
-	private static final double PROB_GRASS_BORN		= Config.getProperty(Constants.PROB_GRASS_BORN);
-	private static final double PROB_TREE_BURN		= Config.getProperty(Constants.PROB_TREE_BURN);
+	public static final int 	MAX_HEIGHT_TREE 		= 100000;
+	public static final int 	MIN_HEIGHT_TREE 		= 2000;
+	public static final int 	ASHES_DISP				= 250;
+	public static final int 	INDEX_GROWING			= 0;
+	public static final int 	INDEX_TYPE				= 2;
+
+	private static final int 		SPEED 				= (int) Config.getProperty(Constants.SPEED_FOREST);
+	private static final double[] 	BURNING_FACTOR 		= Config.getProperties(Constants.BURNING_FACTOR);
+	private static final double 	DENSITY_TREES 		= Config.getProperty(Constants.DENSITY_TREES);
+	private static final double 	DENSITY_GRASS 		= Config.getProperty(Constants.DENSITY_GRASS);
+	private static final double[] 	PROB_TREE_BORN		= Config.getProperties(Constants.PROB_TREE_BORN);
+	private static final double[] 	PROB_TREE_BURN		= Config.getProperties(Constants.PROB_TREE_BURN);
+	private static final double[] 	PROB_GRASS_BORN		= Config.getProperties(Constants.PROB_GRASS_BORN);
+	private static final double[] 	PROB_GRASS_BURN		= Config.getProperties(Constants.PROB_GRASS_BURN);
 
 	/* ****************************************************************
 	 * 	Private context
 	 * ****************************************************************/
-	
+
 	private int[][] landscape;
-	
+
 	/* ****************************************************************
 	 * 	Constructor
 	 * ****************************************************************/
@@ -50,17 +63,18 @@ public class Forest extends CellularAutomaton
 		{
 			for ( int y = 0 ; y < this.height ; y++ )
 			{
-				if (this.isOnlyInState(x, y, CellularAutomaton.EMPTY) && this.landscape[x][y] == LandscapeGenerator.ENVIRONMENT_FOREST) 
+				if (this.isOnlyInState(x, y, EMPTY) && this.landscape[x][y] == LandscapeGenerator.ENVIRONMENT_FOREST) 
 				{
 					if (DENSITY_TREES >= Math.random())
 					{
-						this.setStates(x, y, CellularAutomaton.FOREST_TREE);
-						this.informations[x][y][0] = (int) (Math.random() * (MAX_GROW_TREE - MIN_GROW_TREE) + MIN_GROW_TREE);
+						this.setStates(x, y, FOREST_TREE);
+						this.informations[x][y][INDEX_GROWING] = (int) (Math.random() * (MAX_HEIGHT_TREE - MIN_HEIGHT_TREE) + MIN_HEIGHT_TREE);
+						this.informations[x][y][INDEX_TYPE] = (int) ((Math.random() * 1000) % 3);
 					}
 					if (DENSITY_GRASS >= Math.random()) 
 					{
-						this.setStates(x, y, CellularAutomaton.FOREST_GRASS);
-						this.informations[x][y][0] = 0;
+						this.setStates(x, y, FOREST_GRASS);
+						this.informations[x][y][INDEX_GROWING] = 0;
 					}
 				}
 			}
@@ -70,56 +84,140 @@ public class Forest extends CellularAutomaton
 	@Override
 	public void step(int x, int y) 
 	{
-		if (this.isOnlyInState(x, y, CellularAutomaton.EMPTY))
+		int seasonIndex = Time.getInstance().getSeason().getValue();
+
+		if (this.isOnlyInState(x, y, EMPTY))
 		{
-			if (this.landscape[x][y] == LandscapeGenerator.ENVIRONMENT_FOREST && Math.random() > PROB_TREE_BORN)
+			if (this.landscape[x][y] == LandscapeGenerator.ENVIRONMENT_FOREST && Math.random() < PROB_TREE_BORN[seasonIndex])
 			{
-				this.setStates(x, y, CellularAutomaton.FOREST_TREE);
-				this.informations[x][y][0] = 0;
+				this.setStates(x, y, FOREST_TREE);
+				this.informations[x][y][INDEX_GROWING] = 0;
+				this.informations[x][y][INDEX_TYPE] = (int) ((Math.random() * 1000) % 3);
 			}
+
+			if (this.landscape[x][y] == LandscapeGenerator.ENVIRONMENT_FOREST && Math.random() < PROB_GRASS_BORN[seasonIndex])
+			{
+				this.addState(x, y, FOREST_GRASS);
+				this.informations[x][y][INDEX_GROWING] = 0;
+			}
+		}
+		else
+		{
+			if (this.isInState(x, y, FOREST_TREE))
+			{
+				if (this.isFlammable(x, y) || Math.random() < PROB_TREE_BURN[seasonIndex] || this.isInState(x, y, FOREST_GRASS_BURNING)) 
+				{
+					this.setStates(x, y, FOREST_TREE_BURNING);
+					this.informations[x][y][INDEX_TYPE] = 0;
+				}
+				if (this.informations[x][y][INDEX_GROWING] < MAX_HEIGHT_TREE)
+				{
+					this.informations[x][y][INDEX_GROWING]++;
+				}
+			}
+			else if (this.isInState(x, y, FOREST_TREE_BURNING))
+			{
+				this.propagateFire(x, y);
+				this.informations[x][y][INDEX_GROWING] -= this.informations[x][y][INDEX_GROWING] / BURNING_FACTOR[seasonIndex];
+				if (this.informations[x][y][INDEX_GROWING] / BURNING_FACTOR[seasonIndex] == 0)
+				{
+					this.setStates(x, y, FOREST_TREE_ASHES);
+					this.informations[x][y][INDEX_GROWING] = 0;
+				}
+				else
+				{
+					this.setStates(x, y, FOREST_TREE_BURNING);
+				}
+			}
+			else if (this.isInState(x, y, FOREST_TREE_ASHES))
+			{
+				this.informations[x][y][INDEX_GROWING]++;
+
+				if (this.informations[x][y][INDEX_GROWING] == ASHES_DISP)
+				{
+					this.setStates(x, y, EMPTY);
+				}
+				else
+				{
+					this.setStates(x, y, FOREST_TREE_ASHES);
+				}
+			}		
 			
-			if (this.landscape[x][y] == LandscapeGenerator.ENVIRONMENT_FOREST && Math.random() > PROB_GRASS_BORN)
+			if (this.isInState(x, y, FOREST_GRASS))
 			{
-				this.setStates(x, y, CellularAutomaton.FOREST_GRASS);
-				this.informations[x][y][0] = 0;
+				if (this.isFlammable(x, y) || Math.random() < PROB_GRASS_BURN[seasonIndex] || this.isInState(x, y, FOREST_TREE_BURNING)) 
+				{
+					int state = 0;
+					if (this.isInState(x, y, FOREST_TREE, FOREST_TREE_BURNING, FOREST_TREE_ASHES))
+					{
+						state = this.buffer[x][y];
+					}
+					this.setStates(x, y, state);
+					this.addState(x, y, FOREST_GRASS_BURNING);
+				}
+			}
+			else if (this.isInState(x, y, FOREST_GRASS_BURNING))
+			{
+				this.changeState(x, y, FOREST_GRASS_BURNING, FOREST_GRASS_ASHES);
+			}
+			else if (this.isInState(x, y, FOREST_GRASS_ASHES))
+			{
+				this.removeStates(x, y, FOREST_GRASS_ASHES);
 			}
 		}
-		else if (this.isOnlyInState(x, y, CellularAutomaton.FOREST_TREE))
-		{
-			if (super.nbNeighborsMoore(x, y, CellularAutomaton.FOREST_TREE_BURNING) > (int)(Math.random() * 4) || Math.random() > PROB_TREE_BURN)
-			{
-				this.setStates(x, y, CellularAutomaton.FOREST_TREE_BURNING);
-			}
-			if (this.informations[x][y][0] < MAX_GROW_TREE)
-			{
-				this.informations[x][y][0]++;
-			}
-		}
-		else if (this.isOnlyInState(x, y, CellularAutomaton.FOREST_TREE_BURNING))
-		{
-			this.informations[x][y][0] -= this.informations[x][y][0] / BURNING_FACTOR;
-			if (this.informations[x][y][0] / BURNING_FACTOR == 0)
-			{
-				this.setStates(x, y, CellularAutomaton.FOREST_ASHES);
-				this.informations[x][y][0] = 0;
-			}
-			else
-			{
-				this.setStates(x, y, CellularAutomaton.FOREST_TREE_BURNING);
-			}
-		}
-		else if (this.isOnlyInState(x, y, CellularAutomaton.FOREST_ASHES))
-		{
-			this.informations[x][y][0]++;
+	}
+
+	/* ****************************************************************
+	 * 	Private methods
+	 * ****************************************************************/
+
+	private boolean isFlammable(final int x, final int y)
+	{
+		float probBurn = 0;
+		int nbCells = 0;
 		
-			if (this.informations[x][y][0] == ASHES_DISP)
+		for (int i = x - 1; i <= x + 1; i++)
+		{
+			for (int j = y - 1; j <= y + 1; j++)
 			{
-				this.setStates(x, y, CellularAutomaton.EMPTY);
+				if (!(i == x && j == y) && i >= 0 && i < this.width && j >= 0 && j < this.height)
+				{
+					if (this.isInState(i, j, FOREST_TREE_BURNING))
+					{
+						probBurn += Tools.map(this.informations[x][y][INDEX_GROWING], MIN_HEIGHT_TREE, MAX_HEIGHT_TREE, 1, 2);
+					}
+					
+					if (this.isInState(i, j, FOREST_GRASS_BURNING))
+					{
+						probBurn++;
+					}
+					
+					nbCells++;
+				}
 			}
-			else
+		}
+		
+		probBurn /= nbCells;
+		
+		return Math.random() < Math.min(probBurn, 1);
+	}
+	
+	private void propagateFire(final int x, final int y)
+	{
+		int distance = (int) Tools.map(this.informations[x][y][INDEX_GROWING], MIN_HEIGHT_TREE, MAX_HEIGHT_TREE, 0, 5);
+		
+		for (int i = 0; i < distance; i++)
+		{
+			for (int j = 0; j < distance; j++)
 			{
-				this.setStates(x, y, CellularAutomaton.FOREST_ASHES);
+				if (!(i == x && j == y) && i >= 0 && i < this.width && j >= 0 && j < this.height)
+				{
+					if (this.isInState(i, j, FOREST_TREE) && Math.random() < PROB_TREE_BURN[Time.getInstance().getSeason().getValue()] * distance)
+					{
+						this.changeState(i, j, FOREST_TREE, FOREST_TREE_BURNING);
+					}
+				}
 			}
-		}		
+		}
 	}
 }

@@ -1,3 +1,11 @@
+/**
+ * This file is a part of the project "Vie artificielle".
+ * 
+ * @author 	Quentin Serreau | Enzo Wesquy
+ * @date 	2018
+ * 
+**/
+
 package etu.upmc.project;
 
 import etu.upmc.project.config.Config;
@@ -9,7 +17,8 @@ public class Application {
 	 * 	Application Entry Point
 	 * ****************************************************************/
 	
-	public static void main(String[] args) { //throws ParseException {
+	public static void main(String[] args) 
+	{
 		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 		Config.loadConfig();
 		World world = new World(300, 300);

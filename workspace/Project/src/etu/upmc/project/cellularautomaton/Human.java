@@ -1,34 +1,39 @@
 /**
+ * This file is a part of the project "Vie artificielle".
  * 
- */
+ * @author 	Quentin Serreau | Enzo Wesquy
+ * @date 	2018
+ * 
+**/
+
 package etu.upmc.project.cellularautomaton;
 
 import java.util.ArrayList;
 
+import etu.upmc.project.config.Config;
+import etu.upmc.project.config.Constants;
 import etu.upmc.project.tools.Tools;
-/**
- * Humans are extension of the cellular automaton class
- * they exist on the same buffer than Agents
- * the information buffer needs to be extended to at least 3 dimensions for the new parameters
- * let's pray that the architecture doesn't break down (and me too) when I try to implement more complexity	
- *
- */
+
 public class Human extends CellularAutomaton {
 
 	/* ****************************************************************
 	 * 	Constants
 	 * ****************************************************************/
 
-	private static final int 	SPEED 					= 1;
-	private static final double DENSITY_TRIBES      	= 0.0001;
-	private static final double	DENSITY_HUMANS 			= 0.10; //not random for now
-	private static final double HUMAN_HUNGER_LIMIT  	= 200000;
-	private static final int 	NEW_BUILDING 			= 100;
-	private static final double PROB_KILLING_PREY 		= 0.8;
-	private static final int 	CARRY_CAPACITY 			= 10;
+	private static final int 	SPEED 					= (int) Config.getProperty(Constants.SPEED_HUMANS);
+	private static final double DENSITY_TRIBES      	= Config.getProperty(Constants.DENSITY_TRIBES);
+	private static final double	DENSITY_HUMANS 			= Config.getProperty(Constants.DENSITY_HUMANS);
+	private static final double HUMAN_HUNGER_LIMIT  	= Config.getProperty(Constants.HUMAN_HUNGER_LIMIT);
+	private static final int 	NEW_BUILDING 			= (int) Config.getProperty(Constants.NEW_BUILDING);
+	private static final double PROB_KILLING_PREY 		= Config.getProperty(Constants.PROB_KILLING_PREY);
+	private static final int 	CARRY_CAPACITY 			= (int) Config.getProperty(Constants.CARRY_CAPACITY);
 
-
+	/* ****************************************************************
+	 * 	Private context
+	 * ****************************************************************/
+	
 	private ArrayList<Tribe> tribes;
+
 	/* ****************************************************************
 	 * 	Constructor
 	 * ****************************************************************/
@@ -64,7 +69,7 @@ public class Human extends CellularAutomaton {
 				int nbTribes = 0;
 				if (DENSITY_TRIBES >= Math.random() && (this.isOnlyInState(x, y, EMPTY) || this.isOnlyInState(x, y, FOREST_GRASS)) && this.elevation[x][y] >= 0 && !this.lookAroundFor(x,y,TRIBE_MAIN))
 				{
-					this.addStates(x, y, TRIBE_MAIN);
+					this.addState(x, y, TRIBE_MAIN);
 					this.informations[x][y][1] = nbTribes;
 					nbTribes++;
 					this.tribes.add(new Tribe(x,y));
@@ -98,7 +103,6 @@ public class Human extends CellularAutomaton {
 			int[] newPos = {newCoord[0], newCoord[1]};
 			this.tribes.get(this.informations[x][y][1]).changePosOfHuman(i, newPos);
 			this.updated[newCoord[0]][newCoord[1]] = true;
-
 		}
 	}
 
@@ -258,7 +262,7 @@ public class Human extends CellularAutomaton {
 			{
 				if(this.isEmpty(randomCoord[0], randomCoord[1])) 
 				{
-					this.addStates(randomCoord[0], randomCoord[1], BUILDING);
+					this.addState(randomCoord[0], randomCoord[1], BUILDING);
 					this.informations[randomCoord[0]][randomCoord[1]][1] = i;
 					returnvalue = true;
 					this.tribes.get(i).removeRessources(NEW_BUILDING);
@@ -550,7 +554,7 @@ public class Human extends CellularAutomaton {
 				throw new IllegalArgumentException(Agent.class.getSimpleName() + " : Cannot add agent to a non-empty position.");
 			}
 
-			this.addStates(x, y, state);
+			this.addState(x, y, state);
 			this.informations[x][y][0] = 0;
 			this.informations[x][y][1] = tribeNumber;
 			this.informations[x][y][2] = 0;
@@ -619,7 +623,7 @@ public class Human extends CellularAutomaton {
 			this.informations[x][y][0] = 0;
 			this.informations[x][y][1] = 0;
 			this.informations[x][y][2] = 0;
-			this.addStates(newX, newY, type);
+			this.addState(newX, newY, type);
 			this.updated[newX][newY] = true;
 		}
 	}

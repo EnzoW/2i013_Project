@@ -3,16 +3,18 @@
 <properties>
 	<comment>Project - 2i013</comment>
 	<!-- Speeds -->
-	<entry key="SPEED_FOREST">			1</entry>
-	<entry key="SPEED_AGENTS">			10</entry>
+	<entry key="SPEED_FOREST">			15</entry>
+	<entry key="SPEED_AGENTS">			5</entry>
+	<entry key="SPEED_HUMANS"> 			4</entry>
 	
 	<!-- Forest  -->
 	<entry key="DENSITY_TREES">			0.70</entry>
 	<entry key="DENSITY_GRASS">			0.50</entry>
-	<entry key="BURNING_FACTOR">		50</entry>
-	<entry key="PROB_TREE_BURN">		0.9999</entry>
-	<entry key="PROB_TREE_BORN">		0.9999</entry>
-	<entry key="PROB_GRASS_BORN">		0.999</entry>
+	<entry key="BURNING_FACTOR">		30,20,15,20</entry> <!-- Winter, Spring, Summer, Fall | Higher it is, slower will burn trees -->
+	<entry key="PROB_TREE_BURN">		0.00001,0.0001,0.0005,0.0001</entry> <!-- Winter, Spring, Summer, Fall -->
+	<entry key="PROB_TREE_BORN">		0.000001,0.0003,0.0001,0.0001</entry> <!-- Winter, Spring, Summer, Fall -->
+	<entry key="PROB_GRASS_BURN">		0.0000001,0.0001,0.0001,0.0001</entry> <!-- Winter, Spring, Summer, Fall -->
+	<entry key="PROB_GRASS_BORN">		0.000001,0.0001,0.001,0.0001</entry> <!-- Winter, Spring, Summer, Fall -->
 	
 	<!-- Agents -->
 	<entry key="DENSITY_AGENTS">		0.10</entry>
@@ -23,8 +25,16 @@
 	<entry key="PREDATOR_NATALITY_RATE">0.01</entry>
 	<entry key="PREY_GROWING_TIME">		10</entry>
 	<entry key="PREDATOR_GROWING_TIME">	10</entry>
-	<entry key="PREY_HUNGER_LIMIT">		1000</entry>
-	<entry key="PREDATOR_HUNGER_LIMIT">	1000</entry>
+	<entry key="PREY_HUNGER_LIMIT">		500</entry>
+	<entry key="PREDATOR_HUNGER_LIMIT">	200</entry>
+	
+	<!-- Humans -->
+	<entry key="DENSITY_TRIBES">		0.0001</entry>
+	<entry key="DENSITY_HUMANS">		0.10</entry>
+	<entry key="HUMAN_HUNGER_LIMIT">	200000</entry>
+	<entry key="NEW_BUILDING">			100</entry>
+	<entry key="PROB_KILLING_PREY">		0.8</entry>
+	<entry key="CARRY_CAPACITY">		10</entry>
 	
 	<!-- Landscape -->
 	<entry key="ALTITUDE_RATIO">		0.30</entry>

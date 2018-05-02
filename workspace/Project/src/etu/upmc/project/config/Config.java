@@ -1,3 +1,11 @@
+/**
+ * This file is a part of the project "Vie artificielle".
+ * 
+ * @author 	Quentin Serreau | Enzo Wesquy
+ * @date 	2018
+ * 
+**/
+
 package etu.upmc.project.config;
 
 import java.io.FileInputStream;
@@ -54,7 +62,7 @@ public class Config {
 		{
 			try 
 			{
-				returnValue = Double.parseDouble(properties.getProperty(constant.name()));
+				returnValue = Double.parseDouble(properties.getProperty(constant.name().split("'")[0]));
 			}
 			catch (NullPointerException e)
 			{
@@ -65,6 +73,35 @@ public class Config {
 		return returnValue;
 	}
 
+	
+	public static double[] getProperties(Constants constant)
+	{
+		checkInstance();
+		double[] returnValue = null;
+
+		if (!loaded)
+		{
+			Log.error("Configuration file not loaded.");
+		}
+		else 
+		{
+			String[] prop = properties.getProperty(constant.name()).split(",");
+			returnValue = new double[prop.length];
+			try 
+			{
+				for (int i = 0; i < prop.length; i++)
+				{
+					returnValue[i] = Double.parseDouble(prop[i]);
+				}
+			}
+			catch (NullPointerException e)
+			{
+				Log.error("Value \"" + constant.name() + "\" not found in configuration file.");
+			}
+		}
+
+		return returnValue;
+	}
 
 	/**
 	 * Load configuration file.

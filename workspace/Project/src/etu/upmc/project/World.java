@@ -1,3 +1,11 @@
+/**
+ * This file is a part of the project "Vie artificielle".
+ * 
+ * @author 	Quentin Serreau | Enzo Wesquy
+ * @date 	2018
+ * 
+**/
+
 package etu.upmc.project;
 
 import java.util.ArrayList;
@@ -10,15 +18,11 @@ import etu.upmc.project.cellularautomaton.Human;
 import etu.upmc.project.events.EventInit;
 import etu.upmc.project.events.EventUpdate;
 import etu.upmc.project.landscape.LandscapeGenerator;
+import etu.upmc.project.time.Time;
 import etu.upmc.project.tools.Tools;
 
 public class World extends Observable 
 {
-	/* ****************************************************************
-	 * 	Constants
-	 * ****************************************************************/
-
-	private static final int DELAY 						= 1;
 
 	/* ****************************************************************
 	 * 	Private Context
@@ -58,7 +62,7 @@ public class World extends Observable
 		this.elevation = new double[width][height];
 		this.updated = new boolean[width][height];
 		this.automatons = new ArrayList<>();
-
+		
 		this.landscape = LandscapeGenerator.generateLandscape(this.width, this.height, this.elevation);
 		this.automatons.add(new Agent(width, height, this.buffer, this.informations, this.elevation, this.updated));
 		this.automatons.add(new Forest(width, height, this.buffer, this.informations, this.elevation, this.updated, this.landscape));
@@ -119,7 +123,6 @@ public class World extends Observable
 			public int[][][] getInformations() {
 				return World.this.informations;
 			}
-
 		};
 		
 		long speedCounter = 0;
@@ -130,35 +133,19 @@ public class World extends Observable
 			this.setChanged();
 			this.notifyObservers(eventUpdate);
 
-			if (Math.random() > 0.5d)
+			boolean b = Math.random() > 0.5d;
+			int[][] random = b ? new int[][] {this.randomX, this.randomY} : new int[][] {this.randomY, this.randomX};
+
+			Tools.shuffle(random[0]);
+			for (int i : random[0])
 			{
-				Tools.shuffle(this.randomX);
-				for (int x : this.randomX)
+				Tools.shuffle(random[1]);
+				for (int j : random[1])
 				{
-					Tools.shuffle(this.randomY);
-					for (int y : this.randomY)
-					{
-						this.step(x, y, speedCounter);
-					}
+					int x = b ? i : j;
+					int y = b ? j : i;
+					this.step(x, y, speedCounter);
 				}
-			}
-			else
-			{
-				Tools.shuffle(this.randomY);
-				for (int y : this.randomY)
-				{
-					Tools.shuffle(this.randomX);
-					for (int x : this.randomX)
-					{
-						this.step(x, y, speedCounter);
-					}
-				}
-			}
-			
-			try {
-				Thread.sleep(DELAY);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
 			}
 			
 			for (int x = 0; x < this.width; x++)
@@ -186,7 +173,7 @@ public class World extends Observable
 	{
 		for (CellularAutomaton cellularAutomaton : this.automatons)
 		{
-			if (speedCounter % cellularAutomaton.getSpeed() == 0)
+			if (speedCounter % Math.max((int) (cellularAutomaton.getSpeed() / Time.getInstance().getSpeed()), 1) == 0)
 			{
 				cellularAutomaton.step(x, y);
 			}

@@ -1,3 +1,11 @@
+/**
+ * This file is a part of the project "Vie artificielle".
+ * 
+ * @author 	Quentin Serreau | Enzo Wesquy
+ * @date 	2018
+ * 
+**/
+
 package etu.upmc.project.config;
 
 public enum Constants {
@@ -5,6 +13,7 @@ public enum Constants {
 	/* Speeds */
 	SPEED_FOREST,
 	SPEED_AGENTS,
+	SPEED_HUMANS,
 	
 	/* Forest */
 	DENSITY_TREES,
@@ -12,6 +21,7 @@ public enum Constants {
 	BURNING_FACTOR,
 	PROB_TREE_BURN,
 	PROB_TREE_BORN,
+	PROB_GRASS_BURN,
 	PROB_GRASS_BORN,
 	
 	/* Agents */
@@ -25,6 +35,14 @@ public enum Constants {
 	PREDATOR_GROWING_TIME,
 	PREY_HUNGER_LIMIT,
 	PREDATOR_HUNGER_LIMIT,
+	
+	/* Humans */
+	DENSITY_TRIBES,
+	DENSITY_HUMANS, 		
+	HUMAN_HUNGER_LIMIT, 	
+	NEW_BUILDING,
+	PROB_KILLING_PREY,
+	CARRY_CAPACITY,
 	
 	/* Landscape */
 	ALTITUDE_RATIO,

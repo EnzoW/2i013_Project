@@ -1,3 +1,11 @@
+/**
+ * This file is a part of the project "Vie artificielle".
+ * 
+ * @author 	Quentin Serreau | Enzo Wesquy
+ * @date 	2018
+ * 
+**/
+
 package etu.upmc.project.graphics;
 
 import java.awt.Graphics;
@@ -127,9 +135,9 @@ public class Displayer2D extends JPanel implements Observer, Runnable
 					{
 						value = 0xFFFF0000;
 					}
-					else if (CellularAutomaton.isInStates(buffer[x][y], CellularAutomaton.FOREST_ASHES))
+					else if (CellularAutomaton.isInStates(buffer[x][y], CellularAutomaton.FOREST_TREE_ASHES))
 					{
-						int gray = (int) Tools.map(informations[x][y][0], Forest.MIN_GROW_TREE, Forest.ASHES_DISP, 0, 0xFF);
+						int gray = (int) Tools.map(informations[x][y][0], Forest.MIN_HEIGHT_TREE, Forest.ASHES_DISP, 0, 0xFF);
 						value = 0xFF << 24 | gray << 16 | gray << 8 | gray;
 					}
 					else if (CellularAutomaton.isInStates(buffer[x][y], CellularAutomaton.AGENT_PREY))
